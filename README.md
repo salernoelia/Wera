@@ -1,5 +1,7 @@
 # Risque Server
 
+Backend for the spatial interaction module project, name is still undef.
+
 Be sure to have a Postgres DB Setup.
 
 Start the server for testing:
