@@ -19,8 +19,16 @@ const char* serverUrl = "http://192.168.135.136:8080/cityclimate";
 #define OLED_I2C_ADDRESS 0x3D 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// Button setup
+const int buttonPin = 23;
+int buttonState = 0;
+int lastButtonState = LOW;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
+
 void setup() {
   Serial.begin(115200);
+  pinMode(buttonPin, INPUT_PULLUP); // Ensuring button is pulled up
 
   // Initialize OLED display
   Serial.println("Initializing OLED display...");
@@ -40,53 +48,66 @@ void setup() {
     Serial.println("Connecting to WiFi..");
   }
   Serial.println("Connected to WiFi");
+}
 
-  // Make HTTP GET request
+void loop() {
+  int reading = digitalRead(buttonPin);
+
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();  // reset debounce timer
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      if (buttonState == LOW) {  // Assuming button is connected to GND
+        fetchData();
+      }
+    }
+  }
+
+  lastButtonState = reading;
+}
+
+void fetchData() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Fetching Data...");
+  display.display();
+
   HTTPClient http;
   http.begin(serverUrl);
   int httpResponseCode = http.GET();
 
   if (httpResponseCode > 0) {
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
     String payload = http.getString();
-
-    // Parse JSON
     DynamicJsonDocument doc(1024);
     deserializeJson(doc, payload);
 
-    // Traverse through the features array
     JsonArray features = doc["features"];
     for (JsonObject feature : features) {
       const char* name = feature["properties"]["name"];
       if (strcmp(name, "Bürkliplatz") == 0) {
         double value = feature["properties"]["values"];
-        Serial.print("Temperature at Bürkliplatz: ");
-        Serial.println(value);
-
-        // Display temperature on OLED
         display.clearDisplay();
         display.setTextSize(2);
-        display.setTextColor(SSD1306_WHITE);
         display.setCursor(0, 0);
-        display.print("Buerkli");
+        display.print("Buerkli: ");
         display.setCursor(0, 20);
-        display.print(value);
-        display.print(" °C");
+        display.print(value, 1); // display 1 decimal place
+        display.print("C");
         display.display();
-        
-        Serial.println("Displayed temperature on OLED");
-
         break;
       }
     }
   } else {
-    Serial.print("Error code: ");
-    Serial.println(httpResponseCode);
+    display.println("Fetch failed!");
+    display.println("Error code: " + String(httpResponseCode));
+    display.display();
   }
-  http.end();
-}
 
-void loop() {
-  // put your main code here, to run repeatedly:
+  http.end();
 }
