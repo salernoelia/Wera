@@ -16,6 +16,7 @@ func FetchMeteoBlue(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Failed to fetch climate data", http.StatusInternalServerError)
         return
     }
+	// close body to avoid  pool error
     defer resp.Body.Close()
 
     w.Header().Set("Content-Type", "application/json")
