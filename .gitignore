@@ -1,0 +1,64 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Logs
+*.log
+*.log.*
+
+# JetBrains IDEs (e.g., IntelliJ, GoLand)
+.idea/
+
+# VSCode
+.vscode/
+
+# Mac OS folder attributes
+.DS_Store
+
+# Temporary files
+tmp/
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.ko
+
+# Output of the Go coverage tool
+*.cover
+
+# Profile output
+*.profile
+
+# Compiled Go source files
+*.cgo1.go
+
+# Cached build results (since Go 1.10)
+*.cache
+build/
+
+# Dependency management
+go.sum
+go.mod
+
+# Ignore the binary file created by building
+/risque-server
+
+# Executables produced by go build or go install
+cmd/risque-server/risque-server
+cmd/risque-server/risque-server.exe
+
+# Ignore environment local settings file
+.env

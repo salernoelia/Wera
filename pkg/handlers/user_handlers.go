@@ -41,7 +41,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Unable to connect to database", http.StatusInternalServerError)
         return
     }
-    defer conn.Close()
+    // defer conn.Close()
 
     rows, err := conn.Query(r.Context(), "SELECT id, name, email FROM users")
     if err != nil {

@@ -14,6 +14,9 @@ func FetchCityClimate(w http.ResponseWriter, r *http.Request) {
     unixTimestampRoundedToHour := (unixTimestamp / 3600) * 3600
 
     apiKey := "6MX8Tjra7uGLn2y9"
+
+    // the response only contains temperature data, we have to wait for the full API acess to get more datapoints
+    // the API also reports on only 50~ Sensors
     url := "https://www.meteoblue.com/de/products/cityclimate/getData?locationId=2657896&type=temperature&units=m&time=" + strconv.FormatInt(unixTimestampRoundedToHour, 10) + "&apikey=" + apiKey
 
     resp, err := http.Get(url)
