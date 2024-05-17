@@ -19,22 +19,27 @@ const char* serverUrl = "http://192.168.135.136:8080/cityclimate";
 #define OLED_I2C_ADDRESS 0x3D 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// Button setup
-const int buttonPin = 23;
-int buttonState = 0;
-int lastButtonState = LOW;
+// Button setup for cycling and refreshing data points
+const int cycleButtonPin = 18;  // Button to cycle through data points
+const int refreshButtonPin = 23;  // Button to refresh current data point
+int cycleButtonState;
+int lastCycleButtonState = LOW;
+int refreshButtonState;
+int lastRefreshButtonState = LOW;
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
+int currentIndex = 0;      // Start at index 0
 
 void setup() {
   Serial.begin(115200);
-  pinMode(buttonPin, INPUT_PULLUP); // Ensuring button is pulled up
+  pinMode(cycleButtonPin, INPUT_PULLUP);
+  pinMode(refreshButtonPin, INPUT_PULLUP);
 
   // Initialize OLED display
   Serial.println("Initializing OLED display...");
-  if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDRESS)) {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;);
+    for (;;);
   }
   display.display();
   delay(2000);
@@ -48,26 +53,51 @@ void setup() {
     Serial.println("Connecting to WiFi..");
   }
   Serial.println("Connected to WiFi");
+
+  fetchData(); // Fetch initial data on setup
 }
 
 void loop() {
-  int reading = digitalRead(buttonPin);
+  int cycleReading = digitalRead(cycleButtonPin);
+  int refreshReading = digitalRead(refreshButtonPin);
 
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();  // reset debounce timer
+  // Handle debouncing for both buttons
+  if (cycleReading != lastCycleButtonState || refreshReading != lastRefreshButtonState) {
+    lastDebounceTime = millis();
   }
 
   if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (reading != buttonState) {
-      buttonState = reading;
-
-      if (buttonState == LOW) {  // Assuming button is connected to GND
+    // Handle cycle button
+    if (cycleReading != cycleButtonState) {
+      cycleButtonState = cycleReading;
+      if (cycleButtonState == LOW) {
+        currentIndex = (currentIndex + 1) % 61; // Increment and wrap around from 60 to 0
         fetchData();
+      }
+    }
+    
+    // Handle refresh button
+    if (refreshReading != refreshButtonState) {
+      refreshButtonState = refreshReading;
+      if (refreshButtonState == LOW) {
+        fetchData();  // Refresh the current data point
       }
     }
   }
 
-  lastButtonState = reading;
+  lastCycleButtonState = cycleReading;
+  lastRefreshButtonState = refreshReading;
+}
+
+String replaceUmlauts(String input) {
+  input.replace("ü", "ue");
+  input.replace("ä", "ae");
+  input.replace("ö", "oe");
+  input.replace("Ü", "Ue");
+  input.replace("Ä", "Ae");
+  input.replace("Ö", "Oe");
+  input.replace("ß", "ss");
+  return input;
 }
 
 void fetchData() {
@@ -88,20 +118,25 @@ void fetchData() {
     deserializeJson(doc, payload);
 
     JsonArray features = doc["features"];
-    for (JsonObject feature : features) {
+    if (currentIndex < features.size()) {
+      JsonObject feature = features[currentIndex];
       const char* name = feature["properties"]["name"];
-      if (strcmp(name, "Bürkliplatz") == 0) {
-        double value = feature["properties"]["values"];
-        display.clearDisplay();
-        display.setTextSize(2);
-        display.setCursor(0, 0);
-        display.print("Buerkli: ");
-        display.setCursor(0, 20);
-        display.print(value, 1); // display 1 decimal place
-        display.print("C");
-        display.display();
-        break;
-      }
+      double value = feature["properties"]["values"];
+
+      String displayName = replaceUmlauts(String(name)); // Use the replace function
+
+      display.clearDisplay();
+      display.setTextSize(1);
+      display.setCursor(0, 0);
+      display.println(displayName);
+      display.setTextSize(2);
+      display.setCursor(0, 20);
+      display.print(value, 1); // Display 1 decimal place
+      display.print("C");
+      display.display();
+    } else {
+      display.println("Index out of range");
+      display.display();
     }
   } else {
     display.println("Fetch failed!");
