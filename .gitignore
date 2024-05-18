@@ -58,6 +58,12 @@ go.mod
 # Executables produced by go build or go install
 cmd/risque-server/risque-server
 cmd/risque-server/risque-server.exe
+builds
+risque-server/builds
+risque-server/builds/
+builds/
+builds/*
+
 
 # Ignore environment local settings file
 .env
