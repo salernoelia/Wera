@@ -102,7 +102,15 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
     rand.Seed(time.Now().UnixNano())
     randomID := rand.Int()
     audioFileName := fmt.Sprintf("weather_%d.wav", randomID)
-    filePath := filepath.Join("audio_files", audioFileName)
+    audioDir := "audio_files"
+    filePath := filepath.Join(audioDir, audioFileName)
+
+    // Ensure the audio_files directory exists
+    if err := os.MkdirAll(audioDir, os.ModePerm); err != nil {
+        log.Printf("Error creating directory: %v\n", err)
+        http.Error(w, "Failed to create directory for audio file", http.StatusInternalServerError)
+        return
+    }
 
     err = tts.TextToSpeech(sentence, filePath)
     if err != nil {

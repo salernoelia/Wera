@@ -63,6 +63,8 @@ risque-server/builds
 risque-server/builds/
 builds/
 builds/*
+risque-server/audio_files
+risque-server/audio_files/
 
 
 # Ignore environment local settings file
