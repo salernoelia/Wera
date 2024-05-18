@@ -4,6 +4,12 @@ Backend for the spatial interaction module project, name is still undefined.
 
 Be sure to have a Postgres DB setup.
 
+### Install eSpeak
+
+```bash
+brew install espeak
+```
+
 ### Start the server for testing:
 ```bash
 go run cmd/risque-server/main.go
