@@ -1,80 +1,63 @@
 # Spatial Interaction Radio
 
-Backend for the spatial interaction module project, name is still undef.
-
-Be sure to have a Postgres DB Setup.
-
-Start the server for testing:
-```bash
- go run cmd/risque-server/main.go
-```
- 
-Compile to exec:
-```bash
-go build cmd/risque-server/main.go
-```
----
-
-Sure, here is the expanded documentation with all the new features:
-Spatial Interaction Radio
-
 Backend for the spatial interaction module project, name is still undefined.
 
 Be sure to have a Postgres DB setup.
-Start the server for testing:
 
-bash
-
+### Start the server for testing:
+```bash
 go run cmd/risque-server/main.go
+```
 
-Compile to exec:
-
-bash
-
+### Compile to exec:
+```bash
 go build cmd/risque-server/main.go
+```
 
-Docs
-Endpoints
-GET /cityclimate
+---
+
+# Docs
+
+## Endpoints
+
+### **GET /cityclimate**
 
 Responds with the sensor dataset of the ZHAW Grid, currently only has access to about 50 sensors and the temperature data only.
-GET /meteoblue
+
+### **GET /meteoblue**
 
 Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour overview. Data contains temperature, wind, rain, and some more. Each request takes 8000 tokens and our free API is limited to 10M, so please make only as many requests as needed.
-POST /users
+
+### **POST /users**
 
 Create a user with the following format:
 
-JSON
-
+```JSON
 {
  "name": "John Shoe",
  "email": "john@example.com"
 }
+```
 
-GET /users
+### **GET /users**
 
 Responds with JSON of all users.
 
-GET /weather
+### **GET /weather**
 
 Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, constructs a descriptive sentence, and generates a speech file which is returned as an audio stream.
 
 The response contains:
+- The current average temperature of the sensor grid.
+- The temperature and wind speed according to MeteoBlue.
 
-    The current average temperature of the sensor grid.
-    The temperature and wind speed according to MeteoBlue.
-
-Example Response:
-
-plaintext
-
+### Example Response:
+```plaintext
 The current average temperature of the Sensor Grid is 22.50 degrees Celsius. According to MeteoBlue, the temperature is 20.10 degrees Celsius with a windspeed of 3.5 meters per second.
+```
 
-Example Request in Python:
-
-python
-
+### Example Request in Python:
+```python
 import requests
 from pydub import AudioSegment
 from pydub.playback import play
@@ -91,4 +74,9 @@ def fetch_and_play_audio(url):
         print("Failed to fetch audio:", response.status_code)
 
 fetch_and_play_audio("http://192.168.1.13:8080/weather")
+```
 
+### Dependencies
+- `github.com/jackc/pgx/v4` for PostgreSQL database interaction.
+- `github.com/gorilla/mux` for routing.
+- External TTS library for text-to-speech conversion.
