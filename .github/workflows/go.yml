@@ -31,19 +31,16 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Install Dependencies
-      run: |
-        cd risque-server
-        go mod download
+      run: go mod download
+      working-directory: risque-server
 
     - name: Build
-      run: |
-        cd risque-server
-        go build -o risque-server ./cmd/risque-server
+      run: go build -o risque-server ./cmd/risque-server
+      working-directory: risque-server
 
     - name: Test
-      run: |
-        cd risque-server
-        go test -v ./...
+      run: go test -v ./...
+      working-directory: risque-server
 
     - name: Upload Binary
       uses: actions/upload-artifact@v3
