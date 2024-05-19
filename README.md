@@ -11,13 +11,27 @@ brew install espeak
 ```
 
 ### Start the server for testing:
+
 ```bash
 go run cmd/risque-server/main.go
 ```
 
 ### Compile to exec:
+
 ```bash
 go build cmd/risque-server/main.go
+```
+
+---
+
+## Raspberry PI Setup
+
+#### To build get the dependency and build
+
+```bash
+go get github.com/stianeikeland/go-rpio/v4
+
+go build RaspberryPI/v2/goradio.go
 ```
 
 ---
@@ -54,15 +68,18 @@ Responds with JSON of all users.
 Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, constructs a descriptive sentence, and generates a speech file which is returned as an audio stream.
 
 The response contains:
+
 - The current average temperature of the sensor grid.
 - The temperature and wind speed according to MeteoBlue.
 
 ### Example Response:
+
 ```plaintext
 The current average temperature of the Sensor Grid is 22.50 degrees Celsius. According to MeteoBlue, the temperature is 20.10 degrees Celsius with a windspeed of 3.5 meters per second.
 ```
 
 ### Example Request in Python:
+
 ```python
 import requests
 from pydub import AudioSegment
@@ -83,6 +100,7 @@ fetch_and_play_audio("http://192.168.1.13:8080/weather")
 ```
 
 ### Dependencies
+
 - `github.com/jackc/pgx/v4` for PostgreSQL database interaction.
 - `github.com/gorilla/mux` for routing.
 - External TTS library for text-to-speech conversion.
