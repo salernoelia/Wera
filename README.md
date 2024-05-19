@@ -20,7 +20,7 @@ go build cmd/risque-server/main.go
 
 ## Raspberry PI Setup
 
-### Fetch dependencies and build
+### Fetch dependencies and build:
 
 ```bash
 go get github.com/stianeikeland/go-rpio/v4
