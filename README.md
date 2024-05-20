@@ -40,21 +40,6 @@ Responds with the sensor dataset of the ZHAW Grid, currently only has access to 
 
 Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour overview. Data contains temperature, wind, rain, and some more. Each request takes 8000 tokens and our free API is limited to 10M, so please make only as many requests as needed.
 
-### **POST /users**
-
-Create a user with the following format:
-
-```JSON
-{
- "name": "John Shoe",
- "email": "john@example.com"
-}
-```
-
-### **GET /users**
-
-Responds with JSON of all users.
-
 ### **GET /weather**
 
 Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, constructs a descriptive sentence, and generates a speech file which is returned as an audio stream.
