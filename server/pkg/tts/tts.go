@@ -12,7 +12,7 @@ import (
 func TextToSpeech(text, filePath string) error {
 	apiKey := os.Getenv("TTS_API_KEY")
     if apiKey == "" {
-        log.Fatal("API_KEY environment variable is not set.")
+        log.Fatal("TTS_API_KEY environment variable is not set.")
     }
 	language := "en-us"
 	voice := "Mike"
