@@ -48,9 +48,6 @@ tmp/
 *.cache
 build/
 
-# Dependency management
-go.sum
-go.mod
 
 
 
