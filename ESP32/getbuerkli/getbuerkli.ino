@@ -5,21 +5,21 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-// WiFi credentials
+// Declarations (Prototypes) for all custom functions
+void fetchData();
+void manageWiFiConnection();
+String replaceUmlauts(String input);
+
+// Global variables and configuration constants
 const char* ssid = "Epstein";
 const char* password = "Passwort123";
-
-// Server URL
-const char* serverUrl = "http://192.168.135.136:8080/cityclimate";
-
-// OLED display settings
+const char* serverUrl = "https://spatial-interaction.onrender.com/cityclimate";
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 #define OLED_I2C_ADDRESS 0x3D 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// Button setup for cycling and refreshing data points
 const int cycleButtonPin = 18;  // Button to cycle through data points
 const int refreshButtonPin = 23;  // Button to refresh current data point
 int cycleButtonState;
@@ -35,7 +35,6 @@ void setup() {
   pinMode(cycleButtonPin, INPUT_PULLUP);
   pinMode(refreshButtonPin, INPUT_PULLUP);
 
-  // Initialize OLED display
   Serial.println("Initializing OLED display...");
   if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -46,12 +45,9 @@ void setup() {
   display.clearDisplay();
   Serial.println("OLED display initialized");
 
-  // Connect to Wi-Fi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-  }
+  manageWiFiConnection();
+
+  
   Serial.println("Connected to WiFi");
 
   fetchData(); // Fetch initial data on setup
@@ -61,26 +57,23 @@ void loop() {
   int cycleReading = digitalRead(cycleButtonPin);
   int refreshReading = digitalRead(refreshButtonPin);
 
-  // Handle debouncing for both buttons
   if (cycleReading != lastCycleButtonState || refreshReading != lastRefreshButtonState) {
     lastDebounceTime = millis();
   }
 
   if ((millis() - lastDebounceTime) > debounceDelay) {
-    // Handle cycle button
     if (cycleReading != cycleButtonState) {
       cycleButtonState = cycleReading;
       if (cycleButtonState == LOW) {
-        currentIndex = (currentIndex + 1) % 61; // Increment and wrap around from 60 to 0
+        currentIndex = (currentIndex + 1) % 61;
         fetchData();
       }
     }
     
-    // Handle refresh button
     if (refreshReading != refreshButtonState) {
       refreshButtonState = refreshReading;
       if (refreshButtonState == LOW) {
-        fetchData();  // Refresh the current data point
+        manageWiFiConnection();
       }
     }
   }
@@ -123,7 +116,7 @@ void fetchData() {
       const char* name = feature["properties"]["name"];
       double value = feature["properties"]["values"];
 
-      String displayName = replaceUmlauts(String(name)); // Use the replace function
+      String displayName = replaceUmlauts(String(name));
 
       display.clearDisplay();
       display.setTextSize(1);
@@ -131,7 +124,7 @@ void fetchData() {
       display.println(displayName);
       display.setTextSize(2);
       display.setCursor(0, 20);
-      display.print(value, 1); // Display 1 decimal place
+      display.print(value, 1);
       display.print("C");
       display.display();
     } else {
@@ -145,4 +138,36 @@ void fetchData() {
   }
 
   http.end();
+}
+
+void manageWiFiConnection() {
+
+
+  if (WiFi.status() == WL_CONNECTED) {
+    display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Wifi is Connected!");
+  display.display();
+
+    return;
+  }
+
+
+  Serial.println("Disconnecting WiFi...");
+    WiFi.disconnect();
+
+
+  WiFi.begin(ssid, password);
+
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    display.println("Connecting to WiFi...");
+
+  }
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.display();
 }
