@@ -2,16 +2,18 @@
 
 Backend for the spatial interaction module project, name is still undefined.
 
+[Hosted Service](https://spatial-interaction.onrender.com)
+
 ### Start the server for testing:
 
 ```bash
-go run cmd/risque-server/main.go
+go run cmd/server/main.go
 ```
 
 ### Compile to exec:
 
 ```bash
-go build cmd/risque-server/main.go
+go build cmd/server/main.go
 ```
 
 ---
