@@ -17,7 +17,12 @@ import (
 )
 
 func FetchMeteoBlueData() (models.MeteoBlueData, error) {
-	url := "https://my.meteoblue.com/packages/basic-3h?apikey=6MX8Tjra7uGLn2y9&lat=47.3667&lon=8.55&asl=429&format=json"
+	meteoApi := os.Getenv("METEO_API_KEY")
+    if meteoApi == "" {
+        log.Fatal("API_KEY environment variable is not set.")
+    }
+    url := "https://my.meteoblue.com/packages/basic-3h?apikey=" + meteoApi + "&lat=47.3667&lon=8.55&asl=429&format=json" 
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return models.MeteoBlueData{}, err
@@ -41,8 +46,11 @@ func FetchCityClimateData() (models.CityClimateData, error) {
 	unixTimestamp := now.Unix()
 	unixTimestampRoundedToHour := (unixTimestamp / 3600) * 3600
 
-	apiKey := "6MX8Tjra7uGLn2y9"
-	url := "https://www.meteoblue.com/de/products/cityclimate/getData?locationId=2657896&type=temperature&units=m&time=" + strconv.FormatInt(unixTimestampRoundedToHour, 10) + "&apikey=" + apiKey
+	 meteoApi := os.Getenv("METEO_API_KEY")
+    if meteoApi == "" {
+        log.Fatal("API_KEY environment variable is not set.")
+    }
+	url := "https://www.meteoblue.com/de/products/cityclimate/getData?locationId=2657896&type=temperature&units=m&time=" + strconv.FormatInt(unixTimestampRoundedToHour, 10) + "&apikey=" + meteoApi
 
 	resp, err := http.Get(url)
 	if err != nil {

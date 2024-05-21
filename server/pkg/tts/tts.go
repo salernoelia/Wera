@@ -3,13 +3,17 @@ package tts
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 )
 
 func TextToSpeech(text, filePath string) error {
-	apiKey := "7f1a2aaa531a43b3a33fec6552bacb8b"
+	apiKey := os.Getenv("TTS_API_KEY")
+    if apiKey == "" {
+        log.Fatal("API_KEY environment variable is not set.")
+    }
 	language := "en-us"
 	voice := "Mike"
 	codec := "WAV"

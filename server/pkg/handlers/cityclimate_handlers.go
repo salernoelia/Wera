@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -13,7 +14,10 @@ func FetchCityClimate(w http.ResponseWriter, r *http.Request) {
     unixTimestamp := now.Unix()
     unixTimestampRoundedToHour := (unixTimestamp / 3600) * 3600
 
-    apiKey := "6MX8Tjra7uGLn2y9"
+    apiKey := os.Getenv("METEO_API_KEY")
+    if apiKey == "" {
+        log.Fatal("API_KEY environment variable is not set.")
+    }
 
     // the response only contains temperature data, we have to wait for the full API acess to get more datapoints
     // the API also reports on only 50~ Sensors
