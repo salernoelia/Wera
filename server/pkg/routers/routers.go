@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"risque-server/pkg/handlers"
+	"server/pkg/handlers"
 
 	"github.com/gorilla/mux"
 )

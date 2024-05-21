@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"risque-server/pkg/models"
-	"risque-server/pkg/tts"
+	"server/pkg/models"
+	"server/pkg/tts"
 	"strconv"
 	"time"
 )

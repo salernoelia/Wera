@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	"risque-server/pkg/routers"
+	"server/pkg/routers"
 )
 
 func main() {

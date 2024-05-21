@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
-	"risque-server/pkg/models"
-	"risque-server/pkg/tts"
+	"server/pkg/models"
+	"server/pkg/tts"
 )
 
 func SpeakText(w http.ResponseWriter, r *http.Request) {
