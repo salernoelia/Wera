@@ -4,7 +4,6 @@
 *.dll
 *.so
 *.dylib
-bin/
 
 # Test binary, built with `go test -c`
 *.test
@@ -56,15 +55,15 @@ go.mod
 
 
 # Executables produced by go build or go install
-cmd/risque-server/risque-server
-cmd/risque-server/risque-server.exe
+server
+server.exe
 builds
-risque-server/builds
-risque-server/builds/
+server/builds
+server/builds/
 builds/
 builds/*
-risque-server/audio_files
-risque-server/audio_files/
+server/audio_files
+server/audio_files/
 
 
 # Ignore environment local settings file
