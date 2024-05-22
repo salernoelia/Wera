@@ -32,6 +32,8 @@ go build RaspberryPI/v2/goradio.go
 
 # Docs
 
+http://estationserve.ddns.net:9000/
+
 ## Endpoints
 
 ### **GET /cityclimate**
