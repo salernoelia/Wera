@@ -2,8 +2,6 @@
 
 Backend for the spatial interaction module project, name is still undefined.
 
-[Hosted Service](https://spatial-interaction.onrender.com)
-
 ### Start the server for testing:
 
 ```bash
@@ -32,7 +30,9 @@ go build RaspberryPI/v2/goradio.go
 
 # Docs
 
-http://estationserve.ddns.net:9000/
+[Selfhosted Service](http://estationserve.ddns.net:9000/)
+OR
+[Render Hosted Service (1min startup time)](https://spatial-interaction.onrender.com)
 
 ## Endpoints
 
