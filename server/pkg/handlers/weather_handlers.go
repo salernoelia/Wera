@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"server/pkg/llm"
 	"server/pkg/models"
 	"server/pkg/tts"
 	"strconv"
@@ -99,8 +100,14 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
 		sum += feature.Properties.Values
 	}
 	averageTemp := sum / float64(len(cityClimateData.Features))
-	sentence := fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters per second.", averageTemp, firstTemperature, firstWindspeed)
+	sentence := fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters per second. Please take all of this information and present it like a weatherman, in case of extreme temperature or windspeed, notify about the risk or give tips about how to avoid getting hurt by it. Please only mention this in case of actual risks, dont be too verbose.", averageTemp, firstTemperature, firstWindspeed)
 	log.Println(sentence)
+
+	// Inside the FetchAndSpeakWeatherData function, before generating the audio file:
+interpretedText := llm.GenerateSentence(sentence)
+log.Println("Interpreted Text: ", interpretedText)
+
+// Optionally replace the sentence with interpretedText for TTS
 
 	rand.Seed(time.Now().UnixNano())
 	randomID := rand.Int()
@@ -114,7 +121,8 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tts.TextToSpeech(sentence, filePath)
+err = tts.TextToSpeech(interpretedText, filePath)
+
 	if err != nil {
 		log.Printf("Error converting text to speech: %v\n", err)
 		http.Error(w, "Failed to convert text to speech", http.StatusInternalServerError)

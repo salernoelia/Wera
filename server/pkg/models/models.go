@@ -45,3 +45,12 @@ type CityClimateSensor struct {
 type TTSRequest struct {
     Text string `json:"text"`
 }
+
+type APIResponse struct {
+    Choices []struct {
+        Message struct {
+            Role    string `json:"role"`
+            Content string `json:"content"`
+        } `json:"message"`
+    } `json:"choices"`
+}

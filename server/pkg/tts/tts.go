@@ -5,26 +5,26 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"strings"
 )
 
 func TextToSpeech(text, filePath string) error {
 	apiKey := os.Getenv("TTS_API_KEY")
-    if apiKey == "" {
-        log.Fatal("TTS_API_KEY environment variable is not set.")
-    }
+	if apiKey == "" {
+		log.Fatal("TTS_API_KEY environment variable is not set.")
+	}
 	language := "en-us"
 	voice := "Mike"
 	codec := "WAV"
-	
+	text = url.QueryEscape(text) // Properly escape the text
 
 	url := fmt.Sprintf(
 		"http://api.voicerss.org/?key=%s&hl=%s&v=%s&c=%s&src=%s",
-		apiKey, language, voice, codec, strings.ReplaceAll(text, " ", "+"),
+		apiKey, language, voice, codec, text,
 	)
 
-	fmt.Println(url)
+	log.Println("Requesting TTS with URL:", url)
 
 	resp, err := http.Get(url)
 	if err != nil {
