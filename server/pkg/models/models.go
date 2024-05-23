@@ -54,3 +54,12 @@ type APIResponse struct {
         } `json:"message"`
     } `json:"choices"`
 }
+
+type SpeechRequest struct {
+    Text    string `json:"Text"`
+    VoiceId string `json:"VoiceId"`
+    Bitrate string `json:"Bitrate"`
+    Speed   string `json:"Speed"`
+    Pitch   string `json:"Pitch"`
+    Codec   string `json:"Codec"`
+}
