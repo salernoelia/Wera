@@ -11,7 +11,8 @@ func NewRouter() *mux.Router {
     router.HandleFunc("/cityclimate", handlers.FetchCityClimate).Methods("GET")
     router.HandleFunc("/meteoblue", handlers.FetchMeteoBlue).Methods("GET")
     router.HandleFunc("/llmtest", handlers.TestLLM).Methods("GET")
-    router.HandleFunc("/speak", handlers.SpeakText).Methods("POST")
+    router.HandleFunc("/speak", handlers.TTSTest).Methods("POST")
     router.HandleFunc("/weather", handlers.FetchAndSpeakWeatherData).Methods("GET")
+    router.HandleFunc("/weathergps", handlers.FetchAndSpeakWeatherBasedOnGPS).Methods("POST")
     return router
 }

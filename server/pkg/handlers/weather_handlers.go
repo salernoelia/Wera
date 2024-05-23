@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -13,66 +11,12 @@ import (
 	"server/pkg/llm"
 	"server/pkg/models"
 	"server/pkg/unrealspeech"
-	"strconv"
+	"server/pkg/weatherdata"
 	"time"
 )
 
-func FetchMeteoBlueData() (models.MeteoBlueData, error) {
-	meteoApi := os.Getenv("METEO_API_KEY")
-    if meteoApi == "" {
-        log.Fatal("API_KEY environment variable is not set.")
-    }
-    url := "https://my.meteoblue.com/packages/basic-3h?apikey=" + meteoApi + "&lat=47.3667&lon=8.55&asl=429&format=json" 
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return models.MeteoBlueData{}, err
-	}
-	defer resp.Body.Close()
-
-	var meteoData models.MeteoBlueData
-	if err := json.NewDecoder(resp.Body).Decode(&meteoData); err != nil {
-		return models.MeteoBlueData{}, err
-	}
-
-	if len(meteoData.Data.Temperature) == 0 {
-		return models.MeteoBlueData{}, errors.New("no temperature data received from MeteoBlue API")
-	}
-
-	return meteoData, nil
-}
-
-func FetchCityClimateData() (models.CityClimateData, error) {
-	now := time.Now()
-	unixTimestamp := now.Unix()
-	unixTimestampRoundedToHour := (unixTimestamp / 3600) * 3600
-
-	 meteoApi := os.Getenv("METEO_API_KEY")
-    if meteoApi == "" {
-        log.Fatal("API_KEY environment variable is not set.")
-    }
-	url := "https://www.meteoblue.com/de/products/cityclimate/getData?locationId=2657896&type=temperature&units=m&time=" + strconv.FormatInt(unixTimestampRoundedToHour, 10) + "&apikey=" + meteoApi
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return models.CityClimateData{}, err
-	}
-	defer resp.Body.Close()
-
-	var cityClimateData models.CityClimateData
-	if err := json.NewDecoder(resp.Body).Decode(&cityClimateData); err != nil {
-		return models.CityClimateData{}, err
-	}
-
-	if len(cityClimateData.Features) == 0 {
-		return models.CityClimateData{}, errors.New("invalid data received from CityClimate API")
-	}
-
-	return cityClimateData, nil
-}
-
 func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
-    meteoData, err := FetchMeteoBlueData()
+    meteoData, err := weatherdata.FetchMeteoBlueData()
     if err != nil {
         log.Printf("Error fetching MeteoBlue data: %v\n", err)
         http.Error(w, "Failed to fetch MeteoBlue data", http.StatusInternalServerError)
@@ -88,7 +32,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
     firstTemperature := meteoData.Data.Temperature[0]
     firstWindspeed := meteoData.Data.Windspeed[0]
 
-    cityClimateData, err := FetchCityClimateData()
+    cityClimateData, err := weatherdata.FetchCityClimateData()
     if err != nil {
         log.Printf("Error fetching CityClimate data: %v\n", err)
         http.Error(w, "Failed to fetch CityClimate data", http.StatusInternalServerError)
@@ -119,7 +63,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
     }
 
     // Using predefined settings for the Unreal Speech API
-    err = unrealspeech.GenerateSpeech(unrealspeech.SpeechRequest{
+    err = unrealspeech.GenerateSpeech(models.SpeechRequest{
         Text:    interpretedText,
         VoiceId: "Scarlett",
         Bitrate: "64k",

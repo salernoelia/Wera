@@ -32,15 +32,44 @@ type Data struct {
     // Include other necessary fields
 }
 
+// CityClimateData represents the main structure for the climate data API response.
 type CityClimateData struct {
+    Type   string `json:"type"`
+    Series string `json:"series"`
+    Scale  struct {
+        ValuesMin float64 `json:"values_min"`
+        ValuesMax float64 `json:"values_max"`
+    } `json:"scale"`
+    Meta struct {
+        TimezoneOffsetS     int    `json:"timezone_offset_s"`
+        TimezoneAbbreviation string `json:"timezone_abbreviation"`
+        LocalFirst          int64  `json:"local_first"`
+        LocalLast           int64  `json:"local_last"`
+        Unit                string `json:"unit"`
+    } `json:"meta"`
     Features []struct {
+        Type     string `json:"type"`
+        Geometry struct {
+            Type        string `json:"type"`
+            Coordinates struct {
+                Lon float64 `json:"lon"`
+                Lat float64 `json:"lat"`
+            } `json:"coordinates"`
+        } `json:"geometry"`
         Properties CityClimateSensor `json:"properties"`
     } `json:"features"`
 }
 
+// CityClimateSensor represents the sensor data for a specific location.
 type CityClimateSensor struct {
-    Values float64 `json:"values"`
+    ID        string  `json:"id"`
+    Name      string  `json:"name"`
+    Timestamp string  `json:"timestamp"` // Change to string to match the API response
+    Values    float64 `json:"values"`
+    Colors    string  `json:"colors"`
+    Active    int     `json:"active"`
 }
+
 
 type TTSRequest struct {
     Text string `json:"text"`
@@ -63,3 +92,4 @@ type SpeechRequest struct {
     Pitch   string `json:"Pitch"`
     Codec   string `json:"Codec"`
 }
+
