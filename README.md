@@ -120,7 +120,7 @@ Sample Response Body:
 
 Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour overview. Data contains temperature, wind, rain, and some more. Each request takes 8000 tokens and our free API is limited to 10M, so please make only as many requests as needed.
 
-## **POST /weathergps**
+### **POST /weathergps**
 
 Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, processes GPS data to deliver data for the current location of the radio, constructs a nice response, and generates a speech file (.MP3) which is returned as an audio stream.
 
@@ -154,7 +154,7 @@ The current average temperature of the Sensor Grid is 22.50 degrees Celsius. Acc
 ```
 
 
-### **GET /hotareas**
+### **GET /hotareas**
 
 
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius.
@@ -182,7 +182,7 @@ Sample Response Body:
 
 
 
-### **POST /hotareasgps**
+### **POST /hotareasgps**
 
 
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius, sorted by distance to the post location.
@@ -218,7 +218,7 @@ Sample Response Body:
 ```
 
 
-### **POST /speak**
+### **POST /speak**
 
 Text to speech endpoint. (Unreal speech)
 
