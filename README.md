@@ -263,3 +263,9 @@ Sample Response Body:
 ### Radio Device (Raspberry Pi 4)
 - `github.com/stianeikeland/go-rpio/v4`for GPIO pin support.
 - `go.bug.st/serial.v1`for Serial Support.
+
+### API's
+- [MeteoBlue](https://www.meteoblue.com/de/weather-api/index/overview)
+- [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
+- [Groq](https://console.groq.com/docs/quickstart)
+- [Unreal TTS](https://unrealspeech.com/onboard)
