@@ -156,6 +156,7 @@ The current average temperature of the Sensor Grid is 22.50 degrees Celsius. Acc
 
 ### **GET /hotareas**
 
+
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius.
 
 Sample Response Body:
@@ -180,7 +181,9 @@ Sample Response Body:
 ```
 
 
+
 ### **POST /hotareasgps**
+
 
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius, sorted by distance to the post location.
 
