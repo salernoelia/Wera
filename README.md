@@ -43,7 +43,7 @@ UNREAL_SPEECH_API_KEY=key
     ```
 3. **Fetch dependencies:**
     ```bash
-    go get github.com/jackc/pgx/v4 github.com/gorilla/mux
+    go get github.com/jackc/pgx/v4 github.com/gorilla/mux github.com/joho/godotenv
     ```
 4. **Build the server:**
     ```bash
