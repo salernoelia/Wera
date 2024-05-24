@@ -70,6 +70,12 @@ type CityClimateSensor struct {
     Active    int     `json:"active"`
 }
 
+// CityClimateSensorDistance extends CityClimateSensor with a Distance field
+type CityClimateSensorDistance struct {
+    CityClimateSensor
+	Distance float64
+}
+
 
 type TTSRequest struct {
     Text string `json:"text"`
@@ -93,3 +99,8 @@ type SpeechRequest struct {
     Codec   string `json:"Codec"`
 }
 
+type RadioRequestBody struct {
+    DeviceID  string  `json:"device_id"`
+    Latitude  float64 `json:"latitude"`
+    Longitude float64 `json:"longitude"`
+}
