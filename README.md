@@ -1,30 +1,50 @@
 # Spatial Interaction Radio
 
-Backend for the spatial interaction module project, name is still undefined.
+Software for the spatial interaction module project, name is still undefined.
 
-### Start the server for testing:
+## Server Quickstart:
 
-```bash
-go run cmd/server/main.go
-```
+1. **Navigate to the server directory:**
+    ```bash
+    cd server
+    ```
+2. **Initialize the Go module** (if not already done):
+    ```bash
+    go mod init server
+    ```
+3. **Fetch dependencies:**
+    ```bash
+    go get github.com/jackc/pgx/v4 github.com/gorilla/mux
+    ```
+4. **Build the server:**
+    ```bash
+    go build cmd/server/main.go
+    ```
 
-### Compile to exec:
-
-```bash
-go build cmd/server/main.go
-```
-
----
-
-## Raspberry PI Setup
+## Radio (Raspberry PI 4) Quickstart
 
 ### Fetch dependencies and build:
 
-```bash
-go get github.com/stianeikeland/go-rpio/v4
-
-go build RaspberryPI/v2/goradio.go
-```
+1. **Navigate to the radio directory:**
+    ```bash
+    cd radio
+    ```
+2. **Initialize the Go module** (if not already done):
+    ```bash
+    go mod init goradio
+    ```
+3. **Fetch dependencies:**
+    ```bash
+    go get github.com/stianeikeland/go-rpio/v4 go.bug.st/serial.v1
+    ```
+4. **Build the radio application:**
+    ```bash
+    go build RaspberryPI/v2/goradio.go
+    ```
+5. **Run the built application:**
+    ```bash
+    ./goradio
+    ```
 
 ---
 
@@ -44,8 +64,8 @@ Responds with the sensor dataset of the ZHAW Grid, currently only has access to 
 
 Responds with the sensor dataset of the ZHAW Grid, sorted by distance (closest to furthest).
 
+Sample Request Body:
 ```JSON
-// Sample Request Body
 {
   "device_id": "Device_1",
   "Latitude": 47.3653466,
@@ -53,8 +73,8 @@ Responds with the sensor dataset of the ZHAW Grid, sorted by distance (closest t
 }
 ```
 
+Sample Response Body:
 ```JSON
-// Response
 [
   {
     "id": "03400120",
@@ -71,8 +91,7 @@ Responds with the sensor dataset of the ZHAW Grid, sorted by distance (closest t
         "lat": 47.36892
       }
     }
-  },
-...
+  }
 ]
 ```
 
@@ -84,8 +103,8 @@ Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour ove
 
 Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, processes GPS data to deliver data for the current location of the radio, constructs a nice response, and generates a speech file (.MP3) which is returned as an audio stream.
 
+Sample Request Body:
 ```JSON
-// Sample Request Body
 {
   "device_id": "Device_1",
   "Latitude": 47.3653466,
@@ -93,23 +112,23 @@ Fetches and combines data from both the MeteoBlue and CityClimate APIs, processe
 }
 ```
 
+Sample text it generates and speaks:
 ```plaintext
-// samle text it generates and speaks out
 "Good morning! It's a lovely day outside! The temperature has been quite pleasant, a gentle breeze is blowing and the temperature is just right - not too hot, not too cold. Just perfect. Make sure to stay hydrated and take a break if you're spending time outdoors. And remember, on especially warm days, please be extra careful to avoid heat exhaustion. Stay cool and comfortable!"
 ```
 
 
 ### **GET /weather**
 
-Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, constructs a descriptive sentence, and generates a speech file (.MP3) which is returned as an audio stream.
+Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, constructs a descriptive sentence, and generates a speech file (.MP3) which is returned as an audio stream. This endpoint is used as a relay in case weathergps fails.
 
 The response contains:
 
 - The current average temperature of the sensor grid.
 - The temperature and wind speed according to MeteoBlue.
 
+Sample text it generates and speaks:
 ```plaintext
-// Speech file text
 The current average temperature of the Sensor Grid is 22.50 degrees Celsius. According to MeteoBlue, the temperature is 20.10 degrees Celsius with a windspeed of 3.5 meters per second.
 ```
 
@@ -117,8 +136,8 @@ The current average temperature of the Sensor Grid is 22.50 degrees Celsius. Acc
 
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius.
 
+Sample Response Body:
 ```json
-// Response
 [
   {
     "id": "0340011C",
@@ -142,9 +161,8 @@ Resonds with an array of sensors that are over a certain set threshold, on defau
 
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius, sorted by distance to the post location.
 
-
+Sample Request Body:
 ```JSON
-// Sample Request Body
 {
   "device_id": "Device_1",
   "Latitude": 47.3653466,
@@ -152,8 +170,8 @@ Resonds with an array of sensors that are over a certain set threshold, on defau
 }
 ```
 
+Sample Response Body:
 ```json
-// Response
 [
   {
     "id": "0340011C",
@@ -177,8 +195,8 @@ Resonds with an array of sensors that are over a certain set threshold, on defau
 
 Text to speech endpoint. (Unreal speech)
 
+Sample Request Body:
 ```JSON
-// Request body
 {
     "Text": "Hello, this is a test of the Unreal Speech API integration. How does this sound?",
     "VoiceId": "Amy",
@@ -189,8 +207,8 @@ Text to speech endpoint. (Unreal speech)
 }
 ```
 
+Sample Response Body:
 ```JSON
-// Response Body
 {
   "file": "output.mp3",
   "message": "Speech generated successfully"
@@ -200,8 +218,16 @@ Text to speech endpoint. (Unreal speech)
 
 
 
-### Dependencies
+## Dependencies
+
+
+### Server
 
 - `github.com/jackc/pgx/v4` for PostgreSQL database interaction.
 - `github.com/gorilla/mux` for routing.
-- External TTS library for text-to-speech conversion.
+
+
+### Radio Device (Raspberry Pi 4)
+
+- `github.com/stianeikeland/go-rpio/v4`for GPIO pin support.
+- `go.bug.st/serial.v1`for Serial Support.
