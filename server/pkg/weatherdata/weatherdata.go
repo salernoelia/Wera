@@ -69,7 +69,7 @@ func FetchCityClimateData() (models.CityClimateData, error) {
 func FindHotAreas(data models.CityClimateData) ([]models.CityClimateSensor, error) {
     var hotAreas []models.CityClimateSensor
     for _, feature := range data.Features {
-        if feature.Properties.Values > 12 { // assuming 28°C is the threshold for hot areas
+        if feature.Properties.Values > 28 { // assuming 28°C is the threshold for hot areas
             completeSensor := feature.Properties
             completeSensor.Geometry = feature.Geometry // Make sure geometry is included
             hotAreas = append(hotAreas, completeSensor)

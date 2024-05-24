@@ -30,6 +30,14 @@ func FetchAndReportHotAreasBasedOnLocation(w http.ResponseWriter, r *http.Reques
 
     hotAreasBasedOnLocation := handlegps.FindClosestSensorSlicedList(hotAreas, body.Latitude, body.Longitude)
 
+    // Location names of hot areas
+    var hotAreaNames []string
+    for _, area := range hotAreasBasedOnLocation {
+        hotAreaNames = append(hotAreaNames, area.Name)
+    }
+
+    log.Println(hotAreaNames)
+
     w.Header().Set("Content-Type", "application/json")
     if err := json.NewEncoder(w).Encode(hotAreasBasedOnLocation); err != nil {
         log.Printf("Error encoding response: %v", err)

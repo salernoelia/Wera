@@ -65,15 +65,16 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    hotAreasBasedOnLocation := handlegps.FindClosestSensorSlicedList(hotAreas, body.Latitude, body.Longitude)
+
+
     // Location names of hot areas
     var hotAreaNames []string
-    for _, area := range hotAreas {
+    for _, area := range hotAreasBasedOnLocation {
         hotAreaNames = append(hotAreaNames, area.Name)
     }
 
     
-
-
 
     var sum float64
     for _, feature := range cityClimateData.Features {
@@ -81,9 +82,9 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     }
     averageTemp := sum / float64(len(cityClimateData.Features))
     fmt.Printf("Closest Sensor: %s, Distance: %.2f km\n, MeteoBlue Temperature: %.2f, Windspeed: %.2f\n, Sensor Temperature: %.2f\n", closestSensor.Name, distance, firstTemperature, firstWindspeed, averageTemp)
-    sentence := fmt.Sprintf("The closest sensor is %s, located %.2f km away. The current average temperature of the Sensor Grid is %.2f degrees Celsius. According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters per second. Generate a few sentences like a weather speaker (dont claim to be one) nicely packed around this data without actually mentioning any numbers. Please keep it short, maximum of 250 characters! Be friendly since you are talking to an elderly.", closestSensor.Name, distance, averageTemp, firstTemperature, firstWindspeed)
-
+    sentence := fmt.Sprintf("The closest sensor is %s, located %.2f km away. The current average temperature of the Sensor Grid is %.2f degrees Celsius. According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters. In case of hot areas after this sentence mention that there are some really hot areas and if it is just a few you can even mention them my name %s. Generate a few sentences like a weather speaker (dont claim to be one) nicely packed around this data, sounding very personalized, without actually mentioning any numbers. Please keep it short, maximum of 350 characters! Be friendly since you are talking to an elderly or non technical person, so do not mention any technicalities like sensors.", closestSensor.Name, distance, averageTemp, firstTemperature, firstWindspeed, hotAreaNames)
     interpretedText := llm.GenerateSentence(sentence)
+    log.Println("Original Sentence", sentence )
     log.Println("Interpreted Text: ", interpretedText)
 
     rand.Seed(time.Now().UnixNano())

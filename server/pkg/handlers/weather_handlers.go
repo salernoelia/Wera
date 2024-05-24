@@ -44,6 +44,8 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
         sum += feature.Properties.Values
     }
     averageTemp := sum / float64(len(cityClimateData.Features))
+
+
     sentence := fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters per second. Please take all of this information and present it like a weatherman, in case of extreme temperature or windspeed, notify about the risk or give tips about how to avoid getting hurt by it. Please only mention this in case of actual risks, stay under 300 characters MAXIMUM!", averageTemp, firstTemperature, firstWindspeed)
 
     // Optionally enhance the sentence using your language model
