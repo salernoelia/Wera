@@ -64,17 +64,36 @@ type CityClimateData struct {
 type CityClimateSensor struct {
     ID        string  `json:"id"`
     Name      string  `json:"name"`
-    Timestamp string  `json:"timestamp"` // Change to string to match the API response
+    Timestamp string  `json:"timestamp"`
     Values    float64 `json:"values"`
     Colors    string  `json:"colors"`
     Active    int     `json:"active"`
+    Geometry  struct {
+        Type        string    `json:"type"`
+        Coordinates struct {
+            Lon float64 `json:"lon"`
+            Lat float64 `json:"lat"`
+        } `json:"coordinates"`
+    } `json:"geometry"`
 }
+
+
+
+
 
 // CityClimateSensorDistance extends CityClimateSensor with a Distance field
 type CityClimateSensorDistance struct {
     CityClimateSensor
-	Distance float64
+    Distance float64
+    Geometry struct {
+        Type        string    `json:"type"`
+        Coordinates struct {
+            Lon float64 `json:"lon"`
+            Lat float64 `json:"lat"`
+        } `json:"coordinates"`
+    } `json:"geometry"`
 }
+
 
 
 type TTSRequest struct {
