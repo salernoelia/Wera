@@ -24,6 +24,15 @@ Software for the spatial interaction module project, name is still undefined.
 
 ## Server Quickstart:
 
+Be sure to get all API Keys, .env is formatted like this
+
+```
+METEO_API_KEY=key
+TTS_API_KEY=key
+GROQ_API_KEY=key
+UNREAL_SPEECH_API_KEY=key
+```
+
 1. **Navigate to the server directory:**
     ```bash
     cd server
