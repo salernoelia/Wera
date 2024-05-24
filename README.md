@@ -115,6 +115,7 @@ Sample Response Body:
 ]
 ```
 
+
 ### **GET /meteoblue**
 
 Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour overview. Data contains temperature, wind, rain, and some more. Each request takes 8000 tokens and our free API is limited to 10M, so please make only as many requests as needed.
@@ -152,6 +153,7 @@ Sample text it generates and speaks:
 The current average temperature of the Sensor Grid is 22.50 degrees Celsius. According to MeteoBlue, the temperature is 20.10 degrees Celsius with a windspeed of 3.5 meters per second.
 ```
 
+
 ### **GET /hotareas**
 
 Resonds with an array of sensors that are over a certain set threshold, on default it is set to 28 degrees celsius.
@@ -176,6 +178,7 @@ Sample Response Body:
   }
 ]
 ```
+
 
 ### **POST /hotareasgps**
 
@@ -210,6 +213,7 @@ Sample Response Body:
   }
 ]
 ```
+
 
 ### **POST /speak**
 
