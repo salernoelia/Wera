@@ -59,7 +59,7 @@ Software for the spatial interaction module project, name is still undefined.
     ```
 4. **Build the radio application:**
     ```bash
-    go build RaspberryPI/v2/goradio.go
+    go build goradio.go
     ```
 5. **Run the built application:**
     ```bash
