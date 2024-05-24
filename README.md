@@ -2,6 +2,26 @@
 
 Software for the spatial interaction module project, name is still undefined.
 
+## Table of Contents
+
+- [Server Quickstart](#server-quickstart)
+- [Radio (Raspberry PI 4) Quickstart](#radio-raspberry-pi-4-quickstart)
+  - [Fetch dependencies and build](#fetch-dependencies-and-build)
+- [Docs](#docs)
+  - [Selfhosted Service](#selfhosted-service)
+  - [Endpoints](#endpoints)
+    - [GET /cityclimate](#get-cityclimate)
+    - [POST /cityclimategps](#post-cityclimategps)
+    - [GET /meteoblue](#get-meteoblue)
+    - [POST /weathergps](#post-weathergps)
+    - [GET /weather](#get-weather)
+    - [GET /hotareas](#get-hotareas)
+    - [POST /hotareasgps](#post-hotareasgps)
+    - [POST /speak](#post-speak)
+- [Dependencies](#dependencies)
+  - [Server](#server-1)
+  - [Radio Device (Raspberry Pi 4)](#radio-device-raspberry-pi-4)
+
 ## Server Quickstart:
 
 1. **Navigate to the server directory:**
