@@ -14,11 +14,9 @@ import (
 	"server/pkg/models"
 	"server/pkg/unrealspeech"
 	"server/pkg/weatherdata"
+	"strings"
 	"time"
 )
-
-
-
 
 func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     var body models.RadioRequestBody
@@ -28,61 +26,49 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    meteoData, err := weatherdata.FetchMeteoBlueData()
-    if err != nil {
-        log.Printf("Error fetching MeteoBlue data: %v\n", err)
-        http.Error(w, "Failed to fetch MeteoBlue data", http.StatusInternalServerError)
-        return
+    meteoData, meteoErr := weatherdata.FetchMeteoBlueData()
+    if meteoErr != nil {
+        log.Printf("Error fetching MeteoBlue data: %v\n", meteoErr)
     }
 
-    if len(meteoData.Data.Temperature) == 0 || len(meteoData.Data.Windspeed) == 0 || len(meteoData.Data.PrecipitationProbability) == 0 {
-        log.Println("Incomplete data received from MeteoBlue API")
-        http.Error(w, "Incomplete data received", http.StatusInternalServerError)
-        return
+    cityClimateData, climateErr := weatherdata.FetchCityClimateData()
+    if climateErr != nil {
+        log.Printf("Error fetching CityClimate data: %v\n", climateErr)
     }
 
-    firstTemperature := meteoData.Data.Temperature[0]
-    firstWindspeed := meteoData.Data.Windspeed[0]
-
-    cityClimateData, err := weatherdata.FetchCityClimateData()
-    if err != nil {
-        log.Printf("Error fetching CityClimate data: %v\n", err)
-        http.Error(w, "Failed to fetch CityClimate data", http.StatusInternalServerError)
-        return
-    }
-
-    // Find the closest sensor
     closestSensor, distance := handlegps.FindClosestSensor(cityClimateData, body.Latitude, body.Longitude)
     if closestSensor == nil {
-        http.Error(w, "No close sensor found", http.StatusInternalServerError)
-        return
+        log.Println("No close sensor found")
     }
 
-    // Check if there are hot areas
-    hotAreas, err := weatherdata.FindHotAreas(cityClimateData)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusNotFound)
-        return
+    hotAreas, hotErr := weatherdata.FindHotAreas(cityClimateData)
+    if hotErr != nil {
+        log.Printf("No hot areas found: %v", hotErr)
     }
 
-    hotAreasBasedOnLocation := handlegps.FindClosestSensorSlicedList(hotAreas, body.Latitude, body.Longitude)
-
-
-    // Location names of hot areas
     var hotAreaNames []string
-    for _, area := range hotAreasBasedOnLocation {
+    for _, area := range hotAreas {
         hotAreaNames = append(hotAreaNames, area.Name)
     }
 
-    
-
-    var sum float64
-    for _, feature := range cityClimateData.Features {
-        sum += feature.Properties.Values
+    var sentence string
+    if closestSensor != nil {
+        sentence = fmt.Sprintf("The closest sensor is %s, located %.2f km away. ", closestSensor.Name, distance)
     }
-    averageTemp := sum / float64(len(cityClimateData.Features))
-    fmt.Printf("Closest Sensor: %s, Distance: %.2f km\n, MeteoBlue Temperature: %.2f, Windspeed: %.2f\n, Sensor Temperature: %.2f\n", closestSensor.Name, distance, firstTemperature, firstWindspeed, averageTemp)
-    sentence := fmt.Sprintf("The closest sensor is %s, located %.2f km away. The current average temperature of the Sensor Grid is %.2f degrees Celsius. According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters. In case of hot areas after this sentence mention that there are some really hot areas and if it is just a few you can even mention them my name %s. Generate a few sentences like a weather speaker (dont claim to be one) nicely packed around this data, sounding very personalized, without actually mentioning any numbers. Please keep it short, maximum of 350 characters! Be friendly since you are talking to an elderly or non technical person, so do not mention any technicalities like sensors.", closestSensor.Name, distance, averageTemp, firstTemperature, firstWindspeed, hotAreaNames)
+    if len(meteoData.Data.Temperature) > 0 {
+        averageTemp := averageTemperature(cityClimateData)
+        sentence += fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. ", averageTemp)
+        sentence += fmt.Sprintf("According to MeteoBlue, the temperature is %.2f degrees Celsius with a windspeed of %.2f meters. ", meteoData.Data.Temperature[0], meteoData.Data.Windspeed[0])
+    }
+    if len(hotAreaNames) > 0 {
+        sentence += fmt.Sprintf("Be aware of hot areas like %s. ", strings.Join(hotAreaNames, ", "))
+    }
+
+    sentence += "Generate a few sentences like a weather speaker (dont claim to be one) nicely packed around this data, sounding very personalized, without actually mentioning any numbers."
+    sentence += "Only say things that fit to the actual weather no hypotheticals."
+    sentence += "Be friendly since you are talking to an elderly or non technical person, so do not mention any technicalities like sensors. If the temperatures are very high (over 30) please mention the risks of heat strokes and tell them to be cautious."
+    sentence += "Please keep it short, maximum of 350 characters!"
+
     interpretedText := llm.GenerateSentence(sentence)
     log.Println("Original Sentence", sentence )
     log.Println("Interpreted Text: ", interpretedText)
@@ -130,3 +116,10 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func averageTemperature(data models.CityClimateData) float64 {
+    var sum float64
+    for _, feature := range data.Features {
+        sum += feature.Properties.Values
+    }
+    return sum / float64(len(data.Features))
+}
