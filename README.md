@@ -265,7 +265,7 @@ Sample Response Body:
 - `go.bug.st/serial.v1`for Serial Support.
 
 
-### API's
+### API's
 - [MeteoBlue](https://www.meteoblue.com/de/weather-api/index/overview)
 - [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
 - [Groq](https://console.groq.com/docs/quickstart)
