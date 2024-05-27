@@ -79,11 +79,11 @@ UNREAL_SPEECH_API_KEY=key
 
 # Docs
 
-Selfhosted Service: http://estationserve.ddns.net:9000/
+(DEPRECATED) Selfhosted Service: http://estationserve.ddns.net:9000/
 
 OR
 
-Render Hosted Service (1min startup time, DEPRECATED): https://spatial-interaction.onrender.com
+Render Hosted Service (1min startup time): https://spatial-interaction.onrender.com
 
 ## Endpoints
 
