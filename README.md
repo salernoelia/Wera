@@ -272,3 +272,7 @@ Sample Response Body:
 - [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
 - [Groq](https://console.groq.com/docs/quickstart)
 - [Unreal TTS](https://unrealspeech.com/onboard)
+
+### License
+
+This Project lies under the MIT License.
