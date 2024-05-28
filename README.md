@@ -1,6 +1,6 @@
-# Spatial Interaction Radio
+# Wera
 
-Software for the spatial interaction module project, name is still undefined.
+Backend and Radio device software for weather risk checks.
 
 ## Table of Contents
 
