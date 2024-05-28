@@ -30,7 +30,8 @@ var lastValidLat, lastValidLon float64
 
 var gpsActive bool = false
 
-var indicationLED rpio.Pin
+var GPSCheckLED rpio.Pin
+var internetCheckLED rpio.Pin
 
 
 func postAndPlayAudio(url string, lat, lon float64) {
@@ -138,21 +139,27 @@ func main() {
     }
     defer rpio.Close()
 
-    setupCloseHandler()
 
       const (
     pinA     = 17  // GPIO 17
     pinB     = 27  // GPIO 27
     button   = 22  // GPIO 22 for the switch
-    LED = 26
-)
-
-    indicationLED = rpio.Pin(LED)
-    indicationLED.Output()
-    indicationLED.Low()
+    GPSLED = 26
+    INTERNETLED =  19 
+    )
 
 
+    setupCloseHandler()
 
+    GPSCheckLED = rpio.Pin(GPSLED)
+    GPSCheckLED.Output()
+    GPSCheckLED.Low()
+
+    internetCheckLED = rpio.Pin(INTERNETLED)
+    internetCheckLED.Output()
+    internetCheckLED.Low()
+
+    urlToCheck := "http://www.google.com"
 
 
     mode := &serial.Mode{
@@ -207,7 +214,16 @@ func main() {
  
     lastA := encoderA.Read()
     lastB := encoderB.Read()
+
+  
     for {
+        isConnected := checkInternetConnection(urlToCheck)
+        if isConnected {
+            internetCheckLED.Low()
+        } else {
+            internetCheckLED.High()
+        }
+
         currentA := encoderA.Read()
         currentB := encoderB.Read()
 
@@ -224,20 +240,37 @@ func main() {
 
         if pushButton.Read() == rpio.Low {
             fmt.Println("Button Pressed")
-            if gpsActive == true {
+            if gpsActive && isConnected {
                 fmt.Println("Trying to post to /weathergps...")
                 postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon)
-            } else if gpsActive == false {
+            } else if !gpsActive && isConnected {
                 fmt.Println("Trying to get to /weather since no GPS data is availible...")
                 getAndPlayAudio("https://spatial-interaction.onrender.com/weather")
+            } else {
+                fmt.Println("Internet Status:", isConnected)
+                fmt.Println("GPS Status:", gpsActive)
 
             }
+
             time.Sleep(1000 * time.Millisecond) // Button debounce delay
         }
 
         time.Sleep(2 * time.Millisecond) // Adjust this delay to fine-tune performance
     }
 
+}
+
+func checkInternetConnection(url string) bool {
+    timeout := time.Duration(5 * time.Second)
+    client := http.Client{
+        Timeout: timeout,
+    }
+    _, err := client.Get(url)
+    if err != nil {
+        fmt.Println("Error checking internet connection:", err)
+        return false
+    }
+    return true
 }
 
 func processGPSData(data string) {
@@ -265,21 +298,21 @@ func processGPSData(data string) {
                 lastValidLon = lon
                 fmt.Printf("Valid GPS Data: Latitude: %.6f, Longitude: %.6f\n", lat, lon)
 
-                indicationLED.High()
+                GPSCheckLED.High()
 
                 gpsActive = true
 
 
             } else {
                 fmt.Println("Invalid GPS Data: Skipping zero coordinates.")
-            indicationLED.Low()
+            GPSCheckLED.Low()
 
 
 
             }
         } else {
             fmt.Println("Invalid GPS Data: No 'Active' status.")
-            indicationLED.Low()
+            GPSCheckLED.Low()
 
 
 
@@ -326,5 +359,6 @@ func setupCloseHandler() {
 
 func cleanup() {
     fmt.Println("Turning off...")
-    indicationLED.Low() /
+    GPSCheckLED.Low() // Turn off LED
+    // Add any other cleanup tasks here
 }
