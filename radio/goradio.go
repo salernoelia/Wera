@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"syscall"
 	"time"
@@ -23,9 +24,16 @@ type GPSPayload struct {
     Longitude float64 `json:"Longitude"`
 }
 
+
+
 var lastValidLat, lastValidLon float64
 
-func fetchAndPlayAudio(url string, lat, lon float64) {
+var gpsActive bool = false
+
+var indicationLED rpio.Pin
+
+
+func postAndPlayAudio(url string, lat, lon float64) {
     payload := GPSPayload{
         DeviceID:  "Device_1",
         Latitude:  lat,
@@ -82,41 +90,70 @@ func fetchAndPlayAudio(url string, lat, lon float64) {
     }
 }
 
-func sendGPSData(lat, lon float64) {
-    url := "http://estationserve.ddns.net:9000/weathergps"
-    payload := GPSPayload{
-        DeviceID:  "Device_1",
-        Latitude:  lat,
-        Longitude: lon,
-    }
-    jsonData, err := json.Marshal(payload)
-    if err != nil {
-        fmt.Println("Error marshaling JSON:", err)
-        return
-    }
+func getAndPlayAudio(url string) {
+    resp, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("Failed to fetch audio: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
 
-    resp, err := http.Post(url, "application/json", bytes.NewReader(jsonData))
-    if err != nil {
-        fmt.Printf("Failed to send POST request: %v\n", err)
-        return
-    }
-    defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Failed to fetch audio: %d\n", resp.StatusCode)
+		return
+	}
 
-    body, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        fmt.Printf("Failed to read response body: %v\n", err)
-        return
-    }
+	audioData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Failed to read audio data: %v\n", err)
+		return
+	}
 
-    fmt.Printf("Server response: %s\n", string(body))
+	tmpFile, err := ioutil.TempFile("", "audio-*.wav")
+	if err != nil {
+		fmt.Printf("Failed to create a temp file: %v\n", err)
+		return
+	}
+	defer tmpFile.Close()
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write(audioData); err != nil {
+		fmt.Printf("Failed to write to temp file: %v\n", err)
+		return
+	}
+
+	fmt.Println("Playing audio...")
+	cmd := exec.Command("ffplay", "-nodisp", "-autoexit", tmpFile.Name())
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Failed to play audio: %v\n", err)
+	}
 }
 
+
 func main() {
+  
     if err := rpio.Open(); err != nil {
         fmt.Printf("Error opening GPIO: %v\n", err)
         return
     }
     defer rpio.Close()
+
+    setupCloseHandler()
+
+      const (
+    pinA     = 17  // GPIO 17
+    pinB     = 27  // GPIO 27
+    button   = 22  // GPIO 22 for the switch
+    LED = 26
+)
+
+    indicationLED = rpio.Pin(LED)
+    indicationLED.Output()
+    indicationLED.Low()
+
+
+
+
 
     mode := &serial.Mode{
         BaudRate: 9600,
@@ -158,21 +195,53 @@ func main() {
         }
     }()
 
-    pin := rpio.Pin(17)
-    pin.Input()
-    pin.PullUp()
+    encoderA := rpio.Pin(pinA)
+    encoderB := rpio.Pin(pinB)
+    pushButton := rpio.Pin(button)
 
+    encoderA.Input()
+    encoderB.Input()
+    pushButton.Input()
+    pushButton.PullUp()  // Enable internal pull-up resistor
+    
+ 
+    lastA := encoderA.Read()
+    lastB := encoderB.Read()
     for {
-        if pin.Read() == rpio.Low {
-            fmt.Println("Button pressed, fetching and playing audio...")
-            fetchAndPlayAudio("http://estationserve.ddns.net:9000/weathergps", lastValidLat, lastValidLon)
-            time.Sleep(time.Second) // Debounce delay
+        currentA := encoderA.Read()
+        currentB := encoderB.Read()
+
+        if currentA != lastA || currentB != lastB {
+            if currentA == rpio.High && currentB != lastB {
+                fmt.Println("Rotated Clockwise")
+            } else if currentA == rpio.Low && currentB != lastB {
+                fmt.Println("Rotated Counter-Clockwise")
+            }
         }
-        time.Sleep(10 * time.Millisecond) // Polling delay to reduce CPU usage
+
+        lastA = currentA
+        lastB = currentB
+
+        if pushButton.Read() == rpio.Low {
+            fmt.Println("Button Pressed")
+            if gpsActive == true {
+                fmt.Println("Trying to post to /weathergps...")
+                postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon)
+            } else if gpsActive == false {
+                fmt.Println("Trying to get to /weather since no GPS data is availible...")
+                getAndPlayAudio("https://spatial-interaction.onrender.com/weather")
+
+            }
+            time.Sleep(1000 * time.Millisecond) // Button debounce delay
+        }
+
+        time.Sleep(2 * time.Millisecond) // Adjust this delay to fine-tune performance
     }
+
 }
 
 func processGPSData(data string) {
+    // fmt.Println(data)
     if strings.HasPrefix(data, "$GNRMC") {
         if strings.Contains(data, "A") { // Check for 'Active' status
             latitude := getValue(data, ',', 3)
@@ -182,6 +251,7 @@ func processGPSData(data string) {
 
             lat := convertToDecimalDegrees(latitude, true)
             lon := convertToDecimalDegrees(longitude, false)
+
             if ns == "S" {
                 lat = -lat
             }
@@ -189,15 +259,30 @@ func processGPSData(data string) {
                 lon = -lon
             }
 
+
             if lat != 0.0 && lon != 0.0 {
                 lastValidLat = lat
                 lastValidLon = lon
                 fmt.Printf("Valid GPS Data: Latitude: %.6f, Longitude: %.6f\n", lat, lon)
+
+                indicationLED.High()
+
+                gpsActive = true
+
+
             } else {
                 fmt.Println("Invalid GPS Data: Skipping zero coordinates.")
+            indicationLED.Low()
+
+
+
             }
         } else {
             fmt.Println("Invalid GPS Data: No 'Active' status.")
+            indicationLED.Low()
+
+
+
         }
     }
 }
@@ -226,4 +311,20 @@ func convertToDecimalDegrees(coordinate string, isLatitude bool) float64 {
     fmt.Sscanf(coordinate[:degreeLength], "%f", &degrees)
     fmt.Sscanf(coordinate[degreeLength:], "%f", &minutes)
     return degrees + minutes/60
+}
+
+func setupCloseHandler() {
+    c := make(chan os.Signal)
+    signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+    go func() {
+        <-c
+        fmt.Println("\nCTRL+C pressed. Cleaning up and exiting...")
+        cleanup()
+        os.Exit(0)
+    }()
+}
+
+func cleanup() {
+    fmt.Println("Turning off...")
+    indicationLED.Low() /
 }
