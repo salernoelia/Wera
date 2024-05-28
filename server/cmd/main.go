@@ -8,10 +8,11 @@ import (
 )
 
 func main() {
-// err := godotenv.Load()  // This will load the .env file
-//     if err != nil {
-//         log.Fatal("Error loading .env file")
-//     }
+	// Comment this for deployment on services like Render or Heroku
+	// err := godotenv.Load()
+	//     if err != nil {
+	//         log.Fatal("Error loading .env file")
+	//     }
 
 
     router := routers.NewRouter()

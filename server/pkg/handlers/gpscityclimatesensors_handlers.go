@@ -10,8 +10,6 @@ import (
 )
 
 
-
-
 func ListCityClimateSensorsBasedOnDistance(w http.ResponseWriter, r *http.Request) {
     var body models.RadioRequestBody
     err := json.NewDecoder(r.Body).Decode(&body)

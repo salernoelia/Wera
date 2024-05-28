@@ -8,6 +8,7 @@ import (
 
 func NewRouter() *mux.Router {
     router := mux.NewRouter()
+    router.HandleFunc("/ok", handlers.OKHandler).Methods("GET")
     router.HandleFunc("/cityclimate", handlers.FetchCityClimate).Methods("GET")
     router.HandleFunc("/cityclimategps", handlers.ListCityClimateSensorsBasedOnDistance).Methods("POST")
     router.HandleFunc("/meteoblue", handlers.FetchMeteoBlue).Methods("GET")
