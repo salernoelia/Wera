@@ -1,6 +1,6 @@
 # Wera
 
-Backend and Radio device software for weather risk checks.
+Backend and Radio device software for weather risk alerts.
 
 ## Table of Contents
 
