@@ -226,6 +226,7 @@ var gpsDataBlock string
             char := string(c)
 
             if char == "\n" {
+
                 if strings.HasPrefix(gpsDataBlock, "$GPRMC") {
                     processGPSData(gpsDataBlock)
                 }
@@ -258,26 +259,17 @@ var gpsDataBlock string
 
 // Function to handle button presses asynchronously with improved debouncing
 func handleButtonPress(button *rpio.Pin) {
-    var lastButtonState rpio.State = rpio.High // assume initial non-pressed state
-    lastDebounceTime := time.Now()
+
+    
 
     for {
-        currentButtonState := button.Read()
-        if currentButtonState != lastButtonState {
-            lastDebounceTime = time.Now()
-        }
+        if button.Read() == rpio.Low {
+			fmt.Println("Button pressed!")
+             handleButtonActions()
+			time.Sleep(time.Second) // Add a delay to debounce the button press
+		}
+		time.Sleep(10 * time.Millisecond) // Polling delay to reduce CPU usag
 
-        if time.Since(lastDebounceTime) > DEBOUNCE_DELAY {
-            // Only trigger the button action if the button state has changed
-            // and it's been stable for longer than the debounce delay
-            if currentButtonState == rpio.Low {
-                fmt.Println("Button Pressed")
-                handleButtonActions()
-            }
-            lastButtonState = currentButtonState
-        }
-
-        time.Sleep(10 * time.Millisecond) // Check button state at a regular interval
     }
 }
 
