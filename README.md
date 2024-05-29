@@ -34,6 +34,8 @@ Backend and radio device software for weather risk alerts.
 
 ### Kub
 
+![kub-schematics](kub/kub/kub_schematics.png)
+
 - Raspberry Pi (we used the Pi 4 model b)
 - 1x GPS Module
 - 2x Status LED's (1x Green 1x Red)
