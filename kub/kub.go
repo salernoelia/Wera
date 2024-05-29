@@ -57,7 +57,7 @@ var (
 
 func postAndPlayAudio(url string, lat, lon float64) {
     payload := GPSPayload{
-        DeviceID:  "Device_1",
+        DeviceID:  "Lorena",
         Latitude:  lat,
         Longitude: lon,
     }
@@ -66,6 +66,8 @@ func postAndPlayAudio(url string, lat, lon float64) {
         fmt.Printf("Error marshaling JSON: %v\n", err)
         return
     }
+
+    fmt.Println(bytes.NewBuffer(jsonData))
 
     req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
     if err != nil {
@@ -93,23 +95,23 @@ func postAndPlayAudio(url string, lat, lon float64) {
     }
 
     tmpFile, err := ioutil.TempFile("", "audio-*.wav")
-    if err != nil {
-        fmt.Printf("Failed to create a temp file: %v\n", err)
-        return
-    }
-    defer tmpFile.Close()
-    defer os.Remove(tmpFile.Name())
+	if err != nil {
+		fmt.Printf("Failed to create a temp file: %v\n", err)
+		return
+	}
+	defer tmpFile.Close()
+	defer os.Remove(tmpFile.Name())
 
-    if _, err := tmpFile.Write(audioData); err != nil {
-        fmt.Printf("Failed to write to temp file: %v\n", err)
-        return
-    }
+	if _, err := tmpFile.Write(audioData); err != nil {
+		fmt.Printf("Failed to write to temp file: %v\n", err)
+		return
+	}
 
-    fmt.Println("Playing audio...")
-    cmd := exec.Command("ffplay", "-nodisp", "-autoexit", tmpFile.Name())
-    if err := cmd.Run(); err != nil {
-        fmt.Printf("Failed to play audio: %v\n", err)
-    }
+	fmt.Println("Playing audio...")
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("ffmpeg -i %s -f wav - | aplay -D plughw:CARD=Headphones,DEV=0", tmpFile.Name()))
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Failed to play audio: %v\n", err)
+	}
 }
 
 func getAndPlayAudio(url string) {
@@ -191,23 +193,24 @@ func main() {
 
 
     mode := &serial.Mode{
-        BaudRate: 9600,
-        Parity:   serial.NoParity,
-        DataBits: 8,
-        StopBits: serial.OneStopBit,
-    }
+    BaudRate: 9600,
+    Parity:   serial.NoParity,
+    DataBits: 8,
+    StopBits: serial.OneStopBit,
+}
 
-    port, err := serial.Open("/dev/ttyAMA0", mode)
-    if err != nil {
-        fmt.Println("Failed to open serial port:", err)
-        return
-    }
-    defer port.Close()
+port, err := serial.Open("/dev/ttyAMA0", mode)
+if err != nil {
+    fmt.Println("Failed to open serial port:", err)
+    return
+}
+defer port.Close()
 
-    reader := bufio.NewReader(port)
-    var gpsDataBlock string
+reader := bufio.NewReader(port)
+var gpsDataBlock string
 
-    go func() {
+
+  go func() {
         for {
             c, err := reader.ReadByte()
             if err != nil {
@@ -219,16 +222,21 @@ func main() {
                 continue
             }
 
-            if c == '\n' {
-                if strings.HasPrefix(gpsDataBlock, "$GNRMC") {
+            // Convert the byte to string
+            char := string(c)
+
+            if char == "\n" {
+                if strings.HasPrefix(gpsDataBlock, "$GPRMC") {
                     processGPSData(gpsDataBlock)
                 }
                 gpsDataBlock = ""
             } else {
-                gpsDataBlock += string(c)
+                gpsDataBlock += char
             }
         }
     }()
+
+
 
     // Asynchronous Routine to check internet connection
     go checkInternetConnectivityPeriodically()
@@ -248,23 +256,37 @@ func main() {
 
 }
 
-// Function to handle button presses asynchronously
+// Function to handle button presses asynchronously with improved debouncing
 func handleButtonPress(button *rpio.Pin) {
+    var lastButtonState rpio.State = rpio.High // assume initial non-pressed state
+    lastDebounceTime := time.Now()
+
     for {
-        if button.Read() == rpio.Low {
-            fmt.Println("Button Pressed")
-            handleButtonActions()
-            time.Sleep(1000 * time.Millisecond) // Debounce delay
+        currentButtonState := button.Read()
+        if currentButtonState != lastButtonState {
+            lastDebounceTime = time.Now()
         }
+
+        if time.Since(lastDebounceTime) > DEBOUNCE_DELAY {
+            // Only trigger the button action if the button state has changed
+            // and it's been stable for longer than the debounce delay
+            if currentButtonState == rpio.Low {
+                fmt.Println("Button Pressed")
+                handleButtonActions()
+            }
+            lastButtonState = currentButtonState
+        }
+
         time.Sleep(10 * time.Millisecond) // Check button state at a regular interval
     }
 }
 
+
 // Function to handle actions upon button press
 func handleButtonActions() {
-    isConnected := checkInternetConnection("http://www.google.com")
+    isConnected := checkInternetConnection("https://spatial-interaction.onrender.com/ok")
     if gpsActive && isConnected {
-        fmt.Println("Trying to post to /weathergps...")
+        fmt.Println("Trying to post to /weathergps...", lastValidLat, lastValidLon)
         postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon)
     } else if !gpsActive && isConnected {
         fmt.Println("Trying to get to /weather since no GPS data is available...")
@@ -286,19 +308,20 @@ func checkInternetConnectivityPeriodically() {
         } else {
             internetCheckLED.High()
         }
-        time.Sleep(200 * time.Second) // Check every 10 seconds
+        time.Sleep(200 * time.Second) // Check every 200 seconds
     }
 }
 
 
 func checkInternetConnection(url string) bool {
-    timeout := time.Duration(5 * time.Second)
+    timeout := time.Duration(80 * time.Second)
     client := http.Client{
         Timeout: timeout,
     }
     _, err := client.Get(url)
     if err != nil {
         fmt.Println("Error checking internet connection:", err)
+        internetCheckLED.High()
         return false
     }
     return true
@@ -373,13 +396,13 @@ func setVolume(volume int) error {
 
 
 func processGPSData(data string) {
-    // fmt.Println(data)
-    if strings.HasPrefix(data, "$GNRMC") {
-        if strings.Contains(data, "A") { // Check for 'Active' status
-            latitude := getValue(data, ',', 3)
-            ns := getValue(data, ',', 4)
-            longitude := getValue(data, ',', 5)
-            ew := getValue(data, ',', 6)
+    if strings.HasPrefix(data, "$GPRMC") {
+        fields := strings.Split(data, ",")
+        if len(fields) > 6 && fields[2] == "A" { // Check for 'Active' status
+            latitude := fields[3]
+            ns := fields[4]
+            longitude := fields[5]
+            ew := fields[6]
 
             lat := convertToDecimalDegrees(latitude, true)
             lon := convertToDecimalDegrees(longitude, false)
@@ -391,41 +414,21 @@ func processGPSData(data string) {
                 lon = -lon
             }
 
-
             if lat != 0.0 && lon != 0.0 {
                 lastValidLat = lat
                 lastValidLon = lon
-                fmt.Printf("Valid GPS Data: Latitude: %.6f, Longitude: %.6f\n", lat, lon)
-
-                GPSCheckLED.High()
-
                 gpsActive = true
-
-
+                GPSCheckLED.High()
+                fmt.Printf("Valid GPS Data: Latitude: %.6f, Longitude: %.6f\n", lat, lon)
             } else {
                 fmt.Println("Invalid GPS Data: Skipping zero coordinates.")
-            GPSCheckLED.Low()
-
-
-
             }
         } else {
             fmt.Println("Invalid GPS Data: No 'Active' status.")
-            GPSCheckLED.Low()
-
-
-
         }
     }
 }
 
-func getValue(data string, separator rune, index int) string {
-    parts := strings.Split(data, string(separator))
-    if index < len(parts) {
-        return parts[index]
-    }
-    return ""
-}
 
 func convertToDecimalDegrees(coordinate string, isLatitude bool) float64 {
     degreeLength := 2
