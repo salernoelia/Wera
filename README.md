@@ -6,6 +6,8 @@ Backend and radio device software for weather risk alerts.
 
 - [Wera](#wera)
   - [Table of Contents](#table-of-contents)
+  - [Hardware](#hardware)
+    - [Kub](#kub)
   - [Server Quickstart:](#server-quickstart)
   - [Radio (Raspberry PI 4) Quickstart](#radio-raspberry-pi-4-quickstart)
     - [Fetch dependencies and build:](#fetch-dependencies-and-build)
@@ -37,6 +39,8 @@ Backend and radio device software for weather risk alerts.
 - 2x Status LED's (1x Green 1x Red)
 - 1x Rotary encoder
 - 1x Speaker, easiest if it has it's own amplifier built in
+
+---
 
 ## Server Quickstart:
 
