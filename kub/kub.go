@@ -39,16 +39,18 @@ var internetCheckLED rpio.Pin
     button   = 22  // GPIO 22 for the switch
     GPSLED = 26
     INTERNETLED =  13
+    DEBOUNCE_DELAY = 100 * time.Millisecond // Debounce delay
 )
 
 
 
 var (
-	inputDelta int16
+	inputDelta = 70
 	printFlag  bool
 	state      uint8
 	encoderA   rpio.Pin
 	encoderB   rpio.Pin
+    lastVolumeChangeTime time.Time
     
 )
 
@@ -143,7 +145,7 @@ func getAndPlayAudio(url string) {
 	}
 
 	fmt.Println("Playing audio...")
-	cmd := exec.Command("ffplay", "-nodisp", "-autoexit", tmpFile.Name())
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("ffmpeg -i %s -f wav - | aplay -D plughw:CARD=Headphones,DEV=0", tmpFile.Name()))
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("Failed to play audio: %v\n", err)
 	}
@@ -195,7 +197,7 @@ func main() {
         StopBits: serial.OneStopBit,
     }
 
-    port, err := serial.Open("/dev/serial0", mode)
+    port, err := serial.Open("/dev/ttyAMA0", mode)
     if err != nil {
         fmt.Println("Failed to open serial port:", err)
         return
@@ -234,7 +236,8 @@ func main() {
     // Button press handling in a separate goroutine
     go handleButtonPress(&pushButton)
 
-    
+    // Set initial volume to a midpoint (e.g., 50%)
+	setVolume(50)
 
   
     for {
@@ -274,7 +277,8 @@ func handleButtonActions() {
 
 // Periodically checks internet connection
 func checkInternetConnectivityPeriodically() {
-    urlToCheck := "http://www.google.com"
+    urlToCheck := "https://spatial-interaction.onrender.com/ok"
+    fmt.Println("Checked OK")
     for {
         isConnected := checkInternetConnection(urlToCheck)
         if isConnected {
@@ -282,7 +286,7 @@ func checkInternetConnectivityPeriodically() {
         } else {
             internetCheckLED.High()
         }
-        time.Sleep(10 * time.Second) // Check every 10 seconds
+        time.Sleep(200 * time.Second) // Check every 10 seconds
     }
 }
 
@@ -343,10 +347,28 @@ func readEncoder() {
 }
 
 func printDelta() {
-	if printFlag {
+	if printFlag && time.Since(lastVolumeChangeTime) > DEBOUNCE_DELAY {
 		printFlag = false
-		fmt.Println(inputDelta)
+		volume := mapDeltaToVolume(int(inputDelta))
+		fmt.Println(volume)
+		setVolume(volume)
+		lastVolumeChangeTime = time.Now()
 	}
+}
+
+func mapDeltaToVolume(delta int) int {
+	// Map inputDelta to a range of 0 to 100
+	if delta < 0 {
+		delta = 0
+	} else if delta > 100 {
+		delta = 100
+	}
+	return delta
+}
+
+func setVolume(volume int) error {
+	cmd := exec.Command("amixer", "cset", "numid=1", fmt.Sprintf("%d%%", volume))
+	return cmd.Run()
 }
 
 
