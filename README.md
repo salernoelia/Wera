@@ -26,9 +26,11 @@ Backend and radio device software for weather risk alerts.
     - [API's](#apis)
     - [License](#license)
 
-## Hardware
+---
 
-### Kub
+## Hardware
+
+### Kub
 
 - Raspberry Pi (we used the Pi 4 model b)
 - 1x GPS Module
