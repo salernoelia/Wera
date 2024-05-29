@@ -1,4 +1,4 @@
-package kub
+package main
 
 import (
 	"bufio"
@@ -32,6 +32,25 @@ var gpsActive bool = false
 
 var GPSCheckLED rpio.Pin
 var internetCheckLED rpio.Pin
+
+ const (
+    CLK = 2  // GPIO 2
+	DT  = 3  // GPIO 3
+    button   = 22  // GPIO 22 for the switch
+    GPSLED = 26
+    INTERNETLED =  13
+)
+
+
+
+var (
+	inputDelta int16
+	printFlag  bool
+	state      uint8
+	encoderA   rpio.Pin
+	encoderB   rpio.Pin
+    
+)
 
 
 func postAndPlayAudio(url string, lat, lon float64) {
@@ -139,18 +158,24 @@ func main() {
     }
     defer rpio.Close()
 
+    // Define the pins
+ 
 
-      const (
-    pinA     = 17  // GPIO 17
-    pinB     = 27  // GPIO 27
-    button   = 22  // GPIO 22 for the switch
-    GPSLED = 26
-    INTERNETLED =  19 
-    )
+    // Setup GPIO Pins for the encoder
+    encoderA = rpio.Pin(CLK)
+    encoderB = rpio.Pin(DT)
 
+    encoderA.Input()
+    encoderB.Input()
+    encoderA.PullUp()
+    encoderB.PullUp()
 
-    setupCloseHandler()
+    // Setup the push button
+    pushButton := rpio.Pin(button)
+    pushButton.Input()
+    pushButton.PullUp()
 
+    // Initialize LEDs
     GPSCheckLED = rpio.Pin(GPSLED)
     GPSCheckLED.Output()
     GPSCheckLED.Low()
@@ -159,7 +184,8 @@ func main() {
     internetCheckLED.Output()
     internetCheckLED.Low()
 
-    urlToCheck := "http://www.google.com"
+    setupCloseHandler()
+
 
 
     mode := &serial.Mode{
@@ -202,20 +228,53 @@ func main() {
         }
     }()
 
-    encoderA := rpio.Pin(pinA)
-    encoderB := rpio.Pin(pinB)
-    pushButton := rpio.Pin(button)
+    // Asynchronous Routine to check internet connection
+    go checkInternetConnectivityPeriodically()
 
-    encoderA.Input()
-    encoderB.Input()
-    pushButton.Input()
-    pushButton.PullUp()  // Enable internal pull-up resistor
+    // Button press handling in a separate goroutine
+    go handleButtonPress(&pushButton)
+
     
- 
-    lastA := encoderA.Read()
-    lastB := encoderB.Read()
 
   
+    for {
+        readEncoder()
+        printDelta()
+        time.Sleep(1 * time.Millisecond) // Small sleep to prevent high CPU load
+    }
+
+}
+
+// Function to handle button presses asynchronously
+func handleButtonPress(button *rpio.Pin) {
+    for {
+        if button.Read() == rpio.Low {
+            fmt.Println("Button Pressed")
+            handleButtonActions()
+            time.Sleep(1000 * time.Millisecond) // Debounce delay
+        }
+        time.Sleep(10 * time.Millisecond) // Check button state at a regular interval
+    }
+}
+
+// Function to handle actions upon button press
+func handleButtonActions() {
+    isConnected := checkInternetConnection("http://www.google.com")
+    if gpsActive && isConnected {
+        fmt.Println("Trying to post to /weathergps...")
+        postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon)
+    } else if !gpsActive && isConnected {
+        fmt.Println("Trying to get to /weather since no GPS data is available...")
+        getAndPlayAudio("https://spatial-interaction.onrender.com/weather")
+    } else {
+        fmt.Println("Internet Status:", isConnected)
+        fmt.Println("GPS Status:", gpsActive)
+    }
+}
+
+// Periodically checks internet connection
+func checkInternetConnectivityPeriodically() {
+    urlToCheck := "http://www.google.com"
     for {
         isConnected := checkInternetConnection(urlToCheck)
         if isConnected {
@@ -223,42 +282,10 @@ func main() {
         } else {
             internetCheckLED.High()
         }
-
-        currentA := encoderA.Read()
-        currentB := encoderB.Read()
-
-        if currentA != lastA || currentB != lastB {
-            if currentA == rpio.High && currentB != lastB {
-                fmt.Println("Rotated Clockwise")
-            } else if currentA == rpio.Low && currentB != lastB {
-                fmt.Println("Rotated Counter-Clockwise")
-            }
-        }
-
-        lastA = currentA
-        lastB = currentB
-
-        if pushButton.Read() == rpio.Low {
-            fmt.Println("Button Pressed")
-            if gpsActive && isConnected {
-                fmt.Println("Trying to post to /weathergps...")
-                postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon)
-            } else if !gpsActive && isConnected {
-                fmt.Println("Trying to get to /weather since no GPS data is availible...")
-                getAndPlayAudio("https://spatial-interaction.onrender.com/weather")
-            } else {
-                fmt.Println("Internet Status:", isConnected)
-                fmt.Println("GPS Status:", gpsActive)
-
-            }
-
-            time.Sleep(1000 * time.Millisecond) // Button debounce delay
-        }
-
-        time.Sleep(2 * time.Millisecond) // Adjust this delay to fine-tune performance
+        time.Sleep(10 * time.Second) // Check every 10 seconds
     }
-
 }
+
 
 func checkInternetConnection(url string) bool {
     timeout := time.Duration(5 * time.Second)
@@ -272,6 +299,56 @@ func checkInternetConnection(url string) bool {
     }
     return true
 }
+
+func readEncoder() {
+	CLKstate := encoderA.Read() == rpio.Low
+	DTstate := encoderB.Read() == rpio.Low
+
+	switch state {
+	case 0: // Idle state, encoder not turning
+		if !CLKstate { // Turn clockwise and CLK goes low first
+			state = 1
+		} else if !DTstate { // Turn anticlockwise and DT goes low first
+			state = 4
+		}
+	case 1:
+		if !DTstate { // Continue clockwise and DT will go low after CLK
+			state = 2
+		}
+	case 2:
+		if CLKstate { // Turn further and CLK will go high first
+			state = 3
+		}
+	case 3:
+		if CLKstate && DTstate { // Both CLK and DT now high as the encoder completes one step clockwise
+			state = 0
+			inputDelta++
+			printFlag = true
+		}
+	case 4:
+		if !CLKstate {
+			state = 5
+		}
+	case 5:
+		if DTstate {
+			state = 6
+		}
+	case 6:
+		if CLKstate && DTstate {
+			state = 0
+			inputDelta--
+			printFlag = true
+		}
+	}
+}
+
+func printDelta() {
+	if printFlag {
+		printFlag = false
+		fmt.Println(inputDelta)
+	}
+}
+
 
 func processGPSData(data string) {
     // fmt.Println(data)
