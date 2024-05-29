@@ -26,6 +26,16 @@ Backend and radio device software for weather risk alerts.
     - [API's](#apis)
     - [License](#license)
 
+## Hardware
+
+### Kub
+
+- Raspberry Pi (we used the Pi 4 model b)
+- 1x GPS Module
+- 2x Status LED's (1x Green 1x Red)
+- 1x Rotary encoder
+- 1x Speaker, easiest if it has it's own amplifier built in
+
 ## Server Quickstart:
 
 Be sure to get all API Keys, .env is formatted like this
@@ -38,54 +48,75 @@ UNREAL_SPEECH_API_KEY=key
 ```
 
 1. **Navigate to the server directory:**
-   ```bash
-   cd server
-   ```
+
+```bash
+cd server
+```
+
 2. **Initialize the Go module** (if not already done):
-   ```bash
-   go mod init server
-   ```
+
+```bash
+go mod init server
+```
+
 3. **Fetch dependencies:**
-   ```bash
-   go get github.com/jackc/pgx/v4 github.com/gorilla/mux github.com/joho/godotenv
-   ```
+
+```bash
+go get github.com/jackc/pgx/v4 github.com/gorilla/mux github.com/joho/godotenv
+```
+
 4. **Build the server:**
-   ```bash
-   go build cmd/server/main.go
-   ```
+
+```bash
+go build cmd/server/main.go
+```
+
 5. **Start the Server**
-   ```
-   ./main
-   ```
+
+```
+./main
+```
 
 ## Radio (Raspberry PI 4) Quickstart
 
 ### Fetch dependencies and build:
 
 1. **Navigate to the kub directory:**
-   ```bash
-   cd kub
-   ```
+
+```bash
+cd kub
+```
+
 2. **Initialize the Go module** (if not already done):
-   ```bash
-   go mod init kub
-   ```
+
+```bash
+go mod init kub
+```
+
 3. **Fetch dependencies:**
-   ```bash
-   go get github.com/stianeikeland/go-rpio/v4 go.bug.st/serial.v1
-   ```
+
+```bash
+go get github.com/stianeikeland/go-rpio/v4 go.bug.st/serial.v1
+```
+
 4. **Build the kub application:**
-   ```bash
-   go build kub.go
-   ```
+
+```bash
+go build kub.go
+```
+
 5. **Run the built application:**
-   ```bash
-   ./kub
-   ```
+
+```bash
+./kub
+```
+
 6. **Create a Service for the Kub**
-   ```bash
-   sudo nano /etc/systemd/system/kub.service
-   ```
+
+```bash
+sudo nano /etc/systemd/system/kub.service
+```
+
 7. **Add the following content** to the service file. Adjust the `ExecStart` path to point to your executable and modify other settings as necessary:
 
 ```ini
@@ -111,15 +142,15 @@ WantedBy=multi-user.target
 
 8. **Reload the systemd manager configuration** to read the newly created service file:
 
-   ```bash
-   sudo systemctl daemon-reload
-   ```
+```bash
+sudo systemctl daemon-reload
+```
 
 9. **Enable the service** to start on boot:
 
-   ```bash
-   sudo systemctl enable goradio.service
-   ```
+```bash
+sudo systemctl enable goradio.service
+```
 
 10. **Start the service** immediately to test it:
 
