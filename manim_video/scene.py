@@ -51,24 +51,24 @@ class HitzebedingteTode(MovingCameraScene):
 
         # Adding custom year labels
         for year in switzerland_data:
-            label = Text(str(year), font_size=18, font="Lora")
+            label = Text(str(year), font_size=18, font="Helvetica Neue")
             label.next_to(ax.c2p(year, 0), DOWN)
             label.rotate(-PI / 4)
             self.add(label)
 
         for cases in range(0, 1500, 100):
-            label = Text(str(cases), font_size=24, font="Lora")
+            label = Text(str(cases), font_size=24, font="Helvetica Neue")
             label.next_to(ax.c2p(1999, cases), LEFT)
             self.add(label)
             
       
 
         # Title
-        title = Text("Hitzebedingte Todesfälle", font_size=24, font="Lora").to_edge(UP)
+        title = Text("Hitzebedingte Todesfälle", font_size=24, font="Helvetica Neue").to_edge(UP)
         self.add(title)
 
         # Legend
-        legend = Text("Quelle: BAFU und BAG", font_size=9, font="Lora").to_corner(DOWN + RIGHT)
+        legend = Text("Quelle: BAFU und BAG", font_size=9, font="Helvetica Neue").to_corner(DOWN + RIGHT)
 
         self.add(legend)
 
@@ -86,8 +86,8 @@ class HitzebedingteTode(MovingCameraScene):
      
         
         # Labels for Zurich and Switzerland graphs
-        zurich_label = Text("Zürich", font_size=18, font="Lora").next_to(zurich_graph.points[-1], RIGHT)
-        swiss_label = Text("Schweiz", font_size=18, font="Lora").next_to(swiss_graph.points[-1], RIGHT)
+        zurich_label = Text("Zürich", font_size=18, font="Helvetica Neue").next_to(zurich_graph.points[-1], RIGHT)
+        swiss_label = Text("Schweiz", font_size=18, font="Helvetica Neue").next_to(swiss_graph.points[-1], RIGHT)
         
         
 
