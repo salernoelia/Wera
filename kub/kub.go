@@ -25,7 +25,6 @@ type GPSPayload struct {
 }
 
 
-
 var lastValidLat, lastValidLon float64
 
 var gpsActive bool = false

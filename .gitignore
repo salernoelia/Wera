@@ -2,3 +2,6 @@ server/audio_files/
 .env
 server/go.mod
 server/go.sum
+kub/kub_schematics/kub-backups
+manim_video/__pycache__
+manim_video/media
