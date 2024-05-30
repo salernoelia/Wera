@@ -1,8 +1,8 @@
-# Wera
-
 ![wera-logo](wera-logo-white.png)
 
-Backend and radio device software for weather risk alerts.
+# Wera
+
+A personalized city climate warning system.
 
 ## Table of Contents
 
