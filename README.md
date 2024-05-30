@@ -36,7 +36,7 @@ A personalized city climate warning system.
 
 ### Kub
 
-![kub-schematics](kub/kub/kub_schematics.png)
+![kub-schematics](kub/kub_schematics/kub_schematics.png)
 
 - Raspberry Pi (we used the Pi 4 model b)
 - 1x GPS Module
