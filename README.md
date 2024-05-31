@@ -237,7 +237,7 @@ Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour ove
 
 ### **POST /weathergps**
 
-Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, processes GPS data to deliver data for the current location of the radio, constructs a nice response, and generates a speech file (.MP3) which is returned as an audio stream.
+Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute different data points, to create a current weather analysis and forecast. It uses the GPS data of the kub to deliver data for the current location of the radio, constructs a nice response, and generates a speech file (.MP3) which is returned as an audio stream.
 
 Sample Request Body:
 
