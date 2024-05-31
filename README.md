@@ -257,7 +257,7 @@ Sample text it generates and speaks:
 
 ### **GET /weather**
 
-Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute an average temperature, constructs a descriptive sentence, and generates a speech file (.MP3) which is returned as an audio stream. This endpoint is used as a relay in case weathergps fails.
+Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute different data points, to create a current weather analysis and forecast, constructs a descriptive sentence, and generates a speech file (.MP3) which is returned as an audio stream. This endpoint is used as a relay in case weathergps fails.
 
 The response contains:
 
