@@ -3,5 +3,5 @@ server/audio_files/
 server/go.mod
 server/go.sum
 kub/kub_schematics/kub-backups
-manim_video/__pycache__
-manim_video/media
+video_animations/__pycache__
+video_animations/media
