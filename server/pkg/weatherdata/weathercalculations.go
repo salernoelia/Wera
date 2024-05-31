@@ -5,8 +5,7 @@ import (
 	"server/pkg/models"
 )
 
-
-
+// AverageTemperature calculates the average temperature given a CityClimateData struct.
 func AverageTemperature(data models.CityClimateData) float64 {
     var sum float64
     for _, feature := range data.Features {
@@ -30,7 +29,7 @@ func TemperatureNext6H(data []float64) (float64, error) {
     return sum / 6, nil
 }
 
-
+// PeakMeteoWindspeed returns the maximum windspeed in the data.
 func PeakMeteoWindspeed(data models.MeteoBlueData) float64 {
     var max float64
     for _, windspeed := range data.Data1H.Windspeed {
@@ -41,6 +40,7 @@ func PeakMeteoWindspeed(data models.MeteoBlueData) float64 {
     return max
 }
 
+// PeakMeteoTemperature returns the maximum temperature in the data and the corresponding times.
 func PeakMeteoTemperature(data models.MeteoBlueData) (float64, string) {
     var max float64
     var timeOfMax string
@@ -54,8 +54,6 @@ func PeakMeteoTemperature(data models.MeteoBlueData) (float64, string) {
 
     return max, timeOfMax
 }
-
-
 
 
 // willItRain returns a slice of timestamps when the rain probability exceeds 50%.
@@ -103,6 +101,7 @@ func WillItBeWindy(data models.MeteoBlueData) ([]string) {
 }
 
 
+// WillHaveHighUVIndex returns a slice of timestamps when the UV index exceeds 4.
 func WillHaveHighUVIndex(data models.MeteoBlueData) ([]string) {
     var times []string
     for i, uvIndex := range data.Data1H.UVIndex {
