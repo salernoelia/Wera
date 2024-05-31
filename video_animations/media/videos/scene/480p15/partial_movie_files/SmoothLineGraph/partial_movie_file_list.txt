@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/1185818338_2605340276_1122039373.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/624642324_3978034969_4274516308.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/624642324_1491050604_563553772.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/624642324_1963933930_954183951.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/624642324_3893809428_418672144.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/624642324_2634051292_96189708.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/SmoothLineGraph/624642324_2919340033_603977768.mp4'

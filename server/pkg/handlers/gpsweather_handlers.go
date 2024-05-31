@@ -96,7 +96,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     }
 
     if len(cityClimateData.Features) > 0 {
-        averageTemp := averageTemperature(cityClimateData)
+        averageTemp := weatherdata.AverageTemperature(cityClimateData)
         sentence += fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. ", averageTemp)
     }
 
@@ -104,7 +104,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         sentence += fmt.Sprintf("According to MeteoBlue, the current temperature is %.2f degrees Celsius with a windspeed of %.2f meters. ", meteoData.Data1H.Temperature[currentTimeSpot], meteoData.Data1H.Windspeed[currentTimeSpot])
         sentence += fmt.Sprintf("The relative humidity is %d percent. ", meteoData.Data1H.RelativeHumidity[currentTimeSpot])
 
-        calculatedNext1HTemp, tempErr := temperatureNext1H(meteoData.Data1H.Temperature)
+        calculatedNext1HTemp, tempErr := weatherdata.TemperatureNext1H(meteoData.Data1H.Temperature)
 
         if tempErr != nil {
             log.Printf("Error calculating next 3 hour temperature: %v", tempErr)
@@ -112,7 +112,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
              sentence+= fmt.Sprintf("The average temperature of the next thee hours is %.2f degrees Celsius. ", calculatedNext1HTemp)
         }
 
-        peakTemp, timeOfPeakTemp := peakMeteoTemperature(meteoData)
+        peakTemp, timeOfPeakTemp := weatherdata.PeakMeteoTemperature(meteoData)
         sentence += fmt.Sprintf("The peak temperature of the day is %.2f degrees Celsius at %s. ", peakTemp, timeOfPeakTemp)
 
         if peakTemp > 30 {
@@ -121,7 +121,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
 
         
 
-        peakWindspeed := peakMeteoWindspeed(meteoData)
+        peakWindspeed := weatherdata.PeakMeteoWindspeed(meteoData)
 
         if peakWindspeed > 10 {
             sentence += fmt.Sprintf("The peak windspeed of the day is %.2f meters per second.  ", peakWindspeed)
@@ -129,33 +129,33 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
             sentence += "The windspeed is not expected to exceed 10 meters per second."
         }
 
-        windy := willItBeWindy(meteoData)
+        windy := weatherdata.WillItBeWindy(meteoData)
         if len(windy) > 0 {
             sentence += fmt.Sprintf("It will be windy at %s. ", strings.Join(windy, ", "))
         }
 
-        willRain := willItRain(meteoData)
+        willRain := weatherdata.WillItRain(meteoData)
 
         if len(willRain) > 0 {
             sentence += fmt.Sprintf("It will rain at %s. ", strings.Join(willRain, ", "))
         }
 
-        willSnow := willItSnow(meteoData)
+        willSnow := weatherdata.WillItSnow(meteoData)
         if len(willSnow) > 0 {
             sentence += fmt.Sprintf("It will snow at %s. ", strings.Join(willSnow, ", "))
         }
 
-        willFog := willItBeFoggy(meteoData)
+        willFog := weatherdata.WillItBeFoggy(meteoData)
         if len(willFog) > 0 {
             sentence += fmt.Sprintf("It will be foggy at %s. ", strings.Join(willFog, ", "))
         }
 
-        willWind := willItBeWindy(meteoData)
+        willWind := weatherdata.WillItBeWindy(meteoData)
         if len(willWind) > 0 {
             sentence += fmt.Sprintf("It will be windy at %s. ", strings.Join(willWind, ", "))
         }
 
-        highUVIndex := willHaveHighUVIndex(meteoData)
+        highUVIndex := weatherdata.WillHaveHighUVIndex(meteoData)
         if len(highUVIndex) > 0 {
             sentence += fmt.Sprintf("There will be a high UV index at %s. ", strings.Join(highUVIndex, ", "))
         }
@@ -222,110 +222,4 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         log.Printf("Error writing file to response: %v\n", err)
         http.Error(w, "Failed to send audio file", http.StatusInternalServerError)
     }
-}
-
-func averageTemperature(data models.CityClimateData) float64 {
-    var sum float64
-    for _, feature := range data.Features {
-        sum += feature.Properties.Values
-    }
-    return sum / float64(len(data.Features))
-}
-
-
-// temperatureNext1H calculates the average temperature for the next 3 hours given an array of float64 temperatures.
-func temperatureNext1H(data []float64) (float64, error) {
-    if len(data) < 3 {
-        return 0, fmt.Errorf("not enough data points to calculate the next 3 hours")
-    }
-
-    sum := 0.0
-    for i := 0; i < 3; i++ {
-        sum += data[i]
-    }
-
-    return sum / 3, nil
-}
-
-
-func peakMeteoWindspeed(data models.MeteoBlueData) float64 {
-    var max float64
-    for _, windspeed := range data.Data1H.Windspeed {
-        if windspeed > max {
-            max = windspeed
-        }
-    }
-    return max
-}
-
-func peakMeteoTemperature(data models.MeteoBlueData) (float64, string) {
-    var max float64
-    var timeOfMax string
-
-    for i, temp := range data.Data1H.Temperature {
-        if i == 0 || temp > max {  // Initialize max with the first element or update it
-            max = temp
-            timeOfMax = data.Data1H.Time[i]  // Assuming a corresponding Time slice
-        }
-    }
-
-    return max, timeOfMax
-}
-
-
-
-
-// willItRain returns a slice of timestamps when the rain probability exceeds 50%.
-func willItRain(data models.MeteoBlueData) ([]string) {
-    var times []string
-    for i, probability := range data.Data1H.PrecipitationProbability {
-        if probability > 50 {
-            times = append(times, data.Data1H.Time[i])
-        }
-    }
-    return times
-}
-
-// willItSnow returns a slice of timestamps when the snow fraction is more than 0.5.
-func willItSnow(data models.MeteoBlueData) ([]string) {
-    var times []string
-    for i, snowFraction := range data.Data1H.SnowFraction {
-        if snowFraction > 0.5 {
-            times = append(times, data.Data1H.Time[i])
-        }
-    }
-    return times
-}
-
-// willItBeFoggy returns a slice of timestamps when foggy conditions are detected (pictocode == 3).
-func willItBeFoggy(data models.MeteoBlueData) ([]string) {
-    var times []string
-    for i, pictocode := range data.Data1H.Pictocode {
-        if pictocode == 3 {
-            times = append(times, data.Data1H.Time[i])
-        }
-    }
-    return times
-}
-
-// willItBeWindy returns a slice of timestamps when the windspeed exceeds 10.
-func willItBeWindy(data models.MeteoBlueData) ([]string) {
-    var times []string
-    for i, windspeed := range data.Data1H.Windspeed {
-        if windspeed > 6 {
-            times = append(times, data.Data1H.Time[i])
-        }
-    }
-    return times
-}
-
-
-func willHaveHighUVIndex(data models.MeteoBlueData) ([]string) {
-    var times []string
-    for i, uvIndex := range data.Data1H.UVIndex {
-        if uvIndex > 4 {
-            times = append(times, data.Data1H.Time[i])
-        }
-    }
-    return times
 }

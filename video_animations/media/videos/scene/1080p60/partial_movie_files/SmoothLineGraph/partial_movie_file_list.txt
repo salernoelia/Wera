@@ -1,0 +1,4 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/1080p60/partial_movie_files/SmoothLineGraph/3529212410_2559453816_1160041832.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/1080p60/partial_movie_files/SmoothLineGraph/3040924799_2919340033_3136859753.mp4'
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/1080p60/partial_movie_files/SmoothLineGraph/3040924799_3053084735_1930719829.mp4'

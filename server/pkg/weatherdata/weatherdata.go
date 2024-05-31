@@ -90,3 +90,4 @@ func FindHotAreas(data models.CityClimateData) ([]models.CityClimateSensor, erro
 
     return hotAreas, nil
 }
+

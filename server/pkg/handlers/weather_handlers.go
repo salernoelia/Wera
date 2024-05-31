@@ -59,7 +59,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
     var sentence string
 
     if len(cityClimateData.Features) > 0 {
-        averageTemp := averageTemperature(cityClimateData)
+        averageTemp := weatherdata.AverageTemperature(cityClimateData)
         sentence += fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. ", averageTemp)
     }
 
@@ -67,7 +67,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
         sentence += fmt.Sprintf("According to MeteoBlue, the current temperature is %.2f degrees Celsius with a windspeed of %.2f meters. ", meteoData.Data1H.Temperature[currentTimeSpot], meteoData.Data1H.Windspeed[currentTimeSpot])
         sentence += fmt.Sprintf("The relative humidity is %d percent. ", meteoData.Data1H.RelativeHumidity[currentTimeSpot])
 
-        calculatedNext1HTemp, tempErr := temperatureNext1H(meteoData.Data1H.Temperature)
+        calculatedNext1HTemp, tempErr := weatherdata.TemperatureNext1H(meteoData.Data1H.Temperature)
 
         if tempErr != nil {
             log.Printf("Error calculating next 3 hour temperature: %v", tempErr)
@@ -75,7 +75,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
              sentence+= fmt.Sprintf("The average temperature of the next thee hours is %.2f degrees Celsius. ", calculatedNext1HTemp)
         }
 
-        peakTemp, timeOfPeakTemp := peakMeteoTemperature(meteoData)
+        peakTemp, timeOfPeakTemp := weatherdata.PeakMeteoTemperature(meteoData)
         sentence += fmt.Sprintf("The peak temperature of the day is %.2f degrees Celsius at %s. ", peakTemp, timeOfPeakTemp)
 
         if peakTemp > 30 {
@@ -84,7 +84,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
 
         
 
-        peakWindspeed := peakMeteoWindspeed(meteoData)
+        peakWindspeed := weatherdata.PeakMeteoWindspeed(meteoData)
 
         if peakWindspeed > 10 {
             sentence += fmt.Sprintf("The peak windspeed of the day is %.2f meters per second.  ", peakWindspeed)
@@ -92,33 +92,33 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
             sentence += "The windspeed is not expected to exceed 10 meters per second."
         }
 
-        windy := willItBeWindy(meteoData)
+        windy := weatherdata.WillItBeWindy(meteoData)
         if len(windy) > 0 {
             sentence += fmt.Sprintf("It will be windy at %s. ", strings.Join(windy, ", "))
         }
 
-        willRain := willItRain(meteoData)
+        willRain := weatherdata.WillItRain(meteoData)
 
         if len(willRain) > 0 {
             sentence += fmt.Sprintf("It will rain at %s. ", strings.Join(willRain, ", "))
         }
 
-        willSnow := willItSnow(meteoData)
+        willSnow := weatherdata.WillItSnow(meteoData)
         if len(willSnow) > 0 {
             sentence += fmt.Sprintf("It will snow at %s. ", strings.Join(willSnow, ", "))
         }
 
-        willFog := willItBeFoggy(meteoData)
+        willFog := weatherdata.WillItBeFoggy(meteoData)
         if len(willFog) > 0 {
             sentence += fmt.Sprintf("It will be foggy at %s. ", strings.Join(willFog, ", "))
         }
 
-        willWind := willItBeWindy(meteoData)
+        willWind := weatherdata.WillItBeWindy(meteoData)
         if len(willWind) > 0 {
             sentence += fmt.Sprintf("It will be windy at %s. ", strings.Join(willWind, ", "))
         }
 
-        highUVIndex := willHaveHighUVIndex(meteoData)
+        highUVIndex := weatherdata.WillHaveHighUVIndex(meteoData)
         if len(highUVIndex) > 0 {
             sentence += fmt.Sprintf("There will be a high UV index at %s. ", strings.Join(highUVIndex, ", "))
         }

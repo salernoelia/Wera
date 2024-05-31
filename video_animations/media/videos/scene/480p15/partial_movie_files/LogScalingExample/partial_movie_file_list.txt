@@ -1,0 +1,2 @@
+# This file is used internally by FFMPEG.
+file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/LogScalingExample/1185818338_1733137424_149976087.mp4'
