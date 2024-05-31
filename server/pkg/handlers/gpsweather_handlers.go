@@ -104,7 +104,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         sentence += fmt.Sprintf("According to MeteoBlue, the current temperature is %.2f degrees Celsius with a windspeed of %.2f meters. ", meteoData.Data1H.Temperature[currentTimeSpot], meteoData.Data1H.Windspeed[currentTimeSpot])
         sentence += fmt.Sprintf("The relative humidity is %d percent. ", meteoData.Data1H.RelativeHumidity[currentTimeSpot])
 
-        calculatedNext1HTemp, tempErr := weatherdata.TemperatureNext1H(meteoData.Data1H.Temperature)
+        calculatedNext1HTemp, tempErr := weatherdata.TemperatureNext6H(meteoData.Data1H.Temperature)
 
         if tempErr != nil {
             log.Printf("Error calculating next 3 hour temperature: %v", tempErr)

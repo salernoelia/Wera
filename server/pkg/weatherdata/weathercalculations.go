@@ -17,17 +17,17 @@ func AverageTemperature(data models.CityClimateData) float64 {
 
 
 // temperatureNext1H calculates the average temperature for the next 3 hours given an array of float64 temperatures.
-func TemperatureNext1H(data []float64) (float64, error) {
-    if len(data) < 3 {
-        return 0, fmt.Errorf("not enough data points to calculate the next 3 hours")
+func TemperatureNext6H(data []float64) (float64, error) {
+    if len(data) < 6 {
+        return 0, fmt.Errorf("not enough data points to calculate the next 6 hours")
     }
 
     sum := 0.0
-    for i := 0; i < 3; i++ {
+    for i := 0; i < 6; i++ {
         sum += data[i]
     }
 
-    return sum / 3, nil
+    return sum / 6, nil
 }
 
 
