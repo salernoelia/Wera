@@ -1,5 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatDissipationInCity/3806773521_4044352283_1624522836.mp4'
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatDissipationInCity/2480949441_2928354315_2309519072.mp4'
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatDissipationInCity/2480949441_684331905_3857731150.mp4'
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatDissipationInCity/2480949441_784179552_4042779664.mp4'

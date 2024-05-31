@@ -1,4 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatRelatedDeathsChart/1185818338_2777468123_4175226618.mp4'
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatRelatedDeathsChart/624642324_3337149575_2649815356.mp4'
-file 'file:/Users/eliasalerno/GitHub/manim-community/project/media/videos/scene/480p15/partial_movie_files/HeatRelatedDeathsChart/624642324_2919340033_4054004994.mp4'

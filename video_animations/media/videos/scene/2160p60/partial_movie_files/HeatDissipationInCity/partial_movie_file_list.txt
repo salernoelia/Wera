@@ -1,5 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/Users/eliasalerno/GitHub/spatial-interaction/manim_video/media/videos/scene/2160p60/partial_movie_files/HeatDissipationInCity/2781026044_4044352283_1624522836.mp4'
-file 'file:/Users/eliasalerno/GitHub/spatial-interaction/manim_video/media/videos/scene/2160p60/partial_movie_files/HeatDissipationInCity/3538194733_2928354315_2309519072.mp4'
-file 'file:/Users/eliasalerno/GitHub/spatial-interaction/manim_video/media/videos/scene/2160p60/partial_movie_files/HeatDissipationInCity/3538194733_1612374541_3857731150.mp4'
-file 'file:/Users/eliasalerno/GitHub/spatial-interaction/manim_video/media/videos/scene/2160p60/partial_movie_files/HeatDissipationInCity/3538194733_784179552_620545829.mp4'
