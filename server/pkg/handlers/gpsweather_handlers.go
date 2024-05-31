@@ -12,7 +12,7 @@ import (
 	"server/pkg/handlegps"
 	"server/pkg/llm"
 	"server/pkg/models"
-	"server/pkg/unrealspeech"
+	"server/pkg/tts"
 	"server/pkg/weatherdata"
 	"strings"
 	"time"
@@ -196,14 +196,16 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    err = unrealspeech.GenerateSpeech(models.SpeechRequest{
-        Text:    interpretedText,
-        VoiceId: "Scarlett",
-        Bitrate: "64k",
-        Speed:   "0",
-        Pitch:   "1",
-        Codec:   "libmp3lame",
-    }, filePath)
+    // err = unrealspeech.GenerateSpeech(models.SpeechRequest{
+    //     Text:    interpretedText,
+    //     VoiceId: "Scarlett",
+    //     Bitrate: "64k",
+    //     Speed:   "0",
+    //     Pitch:   "1",
+    //     Codec:   "libmp3lame",
+    // }, filePath)
+
+    err = tts.GoogleTextToSpeech(interpretedText, filePath)
 
     if err != nil {
         log.Printf("Error converting text to speech: %v\n", err)
