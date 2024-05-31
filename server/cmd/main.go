@@ -5,14 +5,16 @@ import (
 	"net/http"
 
 	"server/pkg/routers"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Comment this for deployment on services like Render or Heroku
-	// err := godotenv.Load()
-	//     if err != nil {
-	//         log.Fatal("Error loading .env file")
-	//     }
+	err := godotenv.Load()
+	if err != nil {
+	        log.Fatal("Error loading .env file")
+	}
+	
 
 
     router := routers.NewRouter()

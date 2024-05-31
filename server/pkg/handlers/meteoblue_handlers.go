@@ -15,7 +15,7 @@ func FetchMeteoBlue(w http.ResponseWriter, r *http.Request) {
     }
 
     // URL is already prebuilt w/ Zürich coordinates
-    url := "https://my.meteoblue.com/packages/basic-3h?apikey=" + apiKey + "&lat=47.3667&lon=8.55&asl=429&format=json" 
+    url := "https://my.meteoblue.com/packages/basic-1h?apikey=" + apiKey + "&lat=47.3667&lon=8.55&asl=429&format=json" 
 
     resp, err := http.Get(url)
     if err != nil {

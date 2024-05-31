@@ -2,7 +2,6 @@ package weatherdata
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,30 +11,39 @@ import (
 	"time"
 )
 
+// FetchMeteoBlueData retrieves weather data from the MeteoBlue API.
 func FetchMeteoBlueData() (models.MeteoBlueData, error) {
-	meteoApi := os.Getenv("METEO_API_KEY")
-	if meteoApi == "" {
-		log.Fatal("API_KEY environment variable is not set.")
-	}
-	url := "https://my.meteoblue.com/packages/basic-3h?apikey=" + meteoApi + "&lat=47.3667&lon=8.55&asl=429&format=json"
+    meteoApiKey := os.Getenv("METEO_API_KEY")
+    if meteoApiKey == "" {
+        return models.MeteoBlueData{}, fmt.Errorf("API_KEY environment variable is not set")
+    }
 
-	resp, err := http.Get(url)
-	if err != nil {
-		return models.MeteoBlueData{}, err
-	}
-	defer resp.Body.Close()
+    url := fmt.Sprintf("https://my.meteoblue.com/packages/basic-1h?apikey=%s&lat=47.3667&lon=8.55&asl=429&format=json", meteoApiKey)
+    
+    
+    resp, err := http.Get(url)
+    if err != nil {
+        return models.MeteoBlueData{}, fmt.Errorf("error fetching data from MeteoBlue API: %w", err)
+    }
+    defer resp.Body.Close()
 
-	var meteoData models.MeteoBlueData
-	if err := json.NewDecoder(resp.Body).Decode(&meteoData); err != nil {
-		return models.MeteoBlueData{}, err
-	}
+    // Check if the HTTP request was successful
+    if resp.StatusCode != http.StatusOK {
+        return models.MeteoBlueData{}, fmt.Errorf("MeteoBlue API request failed with status: %s", resp.Status)
+    }
 
-	if len(meteoData.Data.Temperature) == 0 {
-		return models.MeteoBlueData{}, errors.New("no temperature data received from MeteoBlue API")
-	}
+    var meteoData models.MeteoBlueData
+    if err := json.NewDecoder(resp.Body).Decode(&meteoData); err != nil {
+        return models.MeteoBlueData{}, fmt.Errorf("error decoding MeteoBlue data: %w", err)
+    }
 
-	return meteoData, nil
+    if len(meteoData.Data1H.Temperature) == 0 {
+        return models.MeteoBlueData{}, fmt.Errorf("no temperature data received from MeteoBlue API")
+    }
+
+    return meteoData, nil
 }
+
 
 func FetchCityClimateData() (models.CityClimateData, error) {
 	now := time.Now()

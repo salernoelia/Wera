@@ -6,31 +6,77 @@ type User struct {
     Email string `json:"email"`
 }
 
+
+
+
+
 type MeteoBlueData struct {
-    Metadata Metadata `json:"metadata"`
-    Data     Data     `json:"data_3h"` // Ensure this matches the JSON key for weather data
+    Metadata  MeteoBlueMetadata   `json:"metadata"`
+    Units     MeteoBlueUnits      `json:"units"`
+    Data1H    MeteoBlue1H     `json:"data_1h"`
 }
 
-type Metadata struct {
+type MeteoBlueMetadata struct {
     ModelRunUpdateTimeUTC string  `json:"modelrun_updatetime_utc"`
     Name                  string  `json:"name"`
     Height                int     `json:"height"`
-    TimezoneAbbreviation  string  `json:"timezone_abbrevation"`
+    TimezoneAbbrevation   string  `json:"timezone_abbrevation"`
     Latitude              float64 `json:"latitude"`
     ModelRunUTC           string  `json:"modelrun_utc"`
     Longitude             float64 `json:"longitude"`
-    UtcTimeOffset         float64 `json:"utc_timeoffset"` 
+    UTCTimeOffset         float64 `json:"utc_timeoffset"`
     GenerationTimeMs      float64 `json:"generation_time_ms"`
 }
 
-
-type Data struct {
-    Time                   []string  `json:"time"`
-    Temperature            []float64 `json:"temperature"`
-    Windspeed              []float64 `json:"windspeed"`
-    PrecipitationProbability []int   `json:"precipitation_probability"`
-    // Include other necessary fields
+type MeteoBlueUnits struct {
+    Precipitation           string `json:"precipitation"`
+    Windspeed               string `json:"windspeed"`
+    PrecipitationProbability string `json:"precipitation_probability"`
+    RelativeHumidity        string `json:"relativehumidity"`
+    Temperature             string `json:"temperature"`
+    Time                    string `json:"time"`
+    Pressure                string `json:"pressure"`
+    WindDirection           string `json:"winddirection"`
 }
+
+type MeteoBlue1H struct {
+    Time                    []string  `json:"time"`
+    SnowFraction            []float64 `json:"snowfraction"`
+    Windspeed               []float64 `json:"windspeed"`
+    Temperature             []float64 `json:"temperature"`
+    PrecipitationProbability []int     `json:"precipitation_probability"`
+    ConvectivePrecipitation []float64 `json:"convective_precipitation"`
+    Rainspot                []string  `json:"rainspot"`
+    Pictocode               []int     `json:"pictocode"`
+    FeltTemperature         []float64 `json:"felttemperature"`
+    Precipitation           []float64 `json:"precipitation"`
+    IsDaylight              []int     `json:"isdaylight"`
+    UVIndex                 []int     `json:"uvindex"`
+    RelativeHumidity        []int     `json:"relativehumidity"`
+    SeaLevelPressure        []float64 `json:"sealevelpressure"`
+    WindDirection           []int     `json:"winddirection"`
+}
+
+// type Metadata struct {
+//     ModelRunUpdateTimeUTC string  `json:"modelrun_updatetime_utc"`
+//     Name                  string  `json:"name"`
+//     Height                int     `json:"height"`
+//     TimezoneAbbreviation  string  `json:"timezone_abbrevation"`
+//     Latitude              float64 `json:"latitude"`
+//     ModelRunUTC           string  `json:"modelrun_utc"`
+//     Longitude             float64 `json:"longitude"`
+//     UtcTimeOffset         float64 `json:"utc_timeoffset"` 
+//     GenerationTimeMs      float64 `json:"generation_time_ms"`
+// }
+
+
+// type Data struct {
+//     Time                   []string  `json:"time"`
+//     Temperature            []float64 `json:"temperature"`
+//     Windspeed              []float64 `json:"windspeed"`
+//     PrecipitationProbability []int   `json:"precipitation_probability"`
+//     // Include other necessary fields
+// }
 
 // CityClimateData represents the main structure for the climate data API response.
 type CityClimateData struct {
