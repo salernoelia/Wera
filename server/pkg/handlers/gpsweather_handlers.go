@@ -26,6 +26,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+
     meteoData, meteoErr := weatherdata.FetchMeteoBlueData()
     if meteoErr != nil {
         log.Printf("Error fetching MeteoBlue data: %v\n", meteoErr)
@@ -90,44 +91,56 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         hotAreaNames = append(hotAreaNames, area.Name)
     }
 
-    var sentence string
+    sentence := "The name of the user is " + body.DeviceID + ". "
+    sentence += "Your name is wera and you are a good friend of the user, are experienced in weather and want to help stay informed in a formal way, don't be overly excited or positive. "
+    sentence += "Only in case of extreme weather conditions, like heat (28 degrees or above), you should give advice to the user and remind them of preventive measures. "
+    sentence += "An example would be if there is a high windspeed or UV Index or if it is snowing or raining. "
+    sentence += "Only say things that fit to the actual weather no hypotheticals. So dont give useless advice like 'wear a jacket' if its 30 degrees outside. Or 'stay in the shade' if its raining. "
+    sentence += "Since you are talking to a non technical person, do not mention any technical words like sensors, percipitation or numbers and data like the temperature. "
+    sentence += "Do not exceed 350 characters in your resonse, and formulate in a way like its being spoken. "
+    sentence += "The current time is " + currentTime.Format("15:04") + " and the date is " + currentTime.Format("2006-01-02") + "but you only mention daytimes like 'morning' or 'afternoon'. "
+    sentence += "Data you have acess to, to form your weather report:"
+
+
     if closestSensor != nil {
-        sentence = fmt.Sprintf("The closest sensor is %s, located %.2f km away. ", closestSensor.Name, distance)
+        sentence += fmt.Sprintf("The closest City Temperature sensor is at %s, located %.2f km away. It reports a temperature of %.2f", closestSensor.Name, distance, closestSensor.Values)
+    }
+
+    if len(hotAreaNames) > 0 {
+        sentence += fmt.Sprintf("Be especially aware of hot areas like %s. ", strings.Join(hotAreaNames, ", "))
     }
 
     if len(cityClimateData.Features) > 0 {
         averageTemp := weatherdata.AverageTemperature(cityClimateData)
-        sentence += fmt.Sprintf("The current average temperature of the Sensor Grid is %.2f degrees Celsius. ", averageTemp)
+        sentence += fmt.Sprintf("At the current time, the average of all City Temperature sensors is %.2f degrees Celsius. ", averageTemp)
     }
 
     if len(meteoData.Data1H.Temperature) > 0 && len(meteoData.Data1H.Windspeed) > 0 && len(meteoData.Data1H.PrecipitationProbability) > 0{
-        sentence += fmt.Sprintf("According to MeteoBlue, the current temperature is %.2f degrees Celsius with a windspeed of %.2f meters. ", meteoData.Data1H.Temperature[currentTimeSpot], meteoData.Data1H.Windspeed[currentTimeSpot])
+        sentence += fmt.Sprintf("The current temperature in Zürich, according to the meteo service, is %.2f degrees Celsius with a windspeed of %.2f meters. ", meteoData.Data1H.Temperature[currentTimeSpot], meteoData.Data1H.Windspeed[currentTimeSpot])
         sentence += fmt.Sprintf("The relative humidity is %d percent. ", meteoData.Data1H.RelativeHumidity[currentTimeSpot])
 
-        calculatedNext1HTemp, tempErr := weatherdata.TemperatureNext6H(meteoData.Data1H.Temperature)
-
-        if tempErr != nil {
-            log.Printf("Error calculating next 3 hour temperature: %v", tempErr)
+        TemperatureNext3H, calc3HError := weatherdata.TemperatureNext3H(meteoData.Data1H.Temperature)
+        if calc3HError != nil {
+            log.Printf("Error calculating next 6 hour temperature: %v", calc3HError)
         } else {
-             sentence+= fmt.Sprintf("The average temperature of the next thee hours is %.2f degrees Celsius. ", calculatedNext1HTemp)
+            sentence += fmt.Sprintf("The average temperature of the next three hours is %.2f degrees Celsius, ", TemperatureNext3H)
+        }
+
+        TemperatureNext6H, calc6HError := weatherdata.TemperatureNext6H(meteoData.Data1H.Temperature)
+
+        if calc6HError != nil {
+            log.Printf("Error calculating next 3 hour temperature: %v", calc6HError)
+        } else {
+             sentence+= fmt.Sprintf("and over the next six hours %.2f degrees Celsius. ", TemperatureNext6H)
         }
 
         peakTemp, timeOfPeakTemp := weatherdata.PeakMeteoTemperature(meteoData)
         sentence += fmt.Sprintf("The peak temperature of the day is %.2f degrees Celsius at %s. ", peakTemp, timeOfPeakTemp)
 
-        if peakTemp > 30 {
-            sentence += "It will be above 30 degrees Celsius today. Be cautious of heat strokes."
-        }
-
-        
 
         peakWindspeed := weatherdata.PeakMeteoWindspeed(meteoData)
+        sentence += fmt.Sprintf("The peak windspeed of the day is %.2f meters per second.  ", peakWindspeed)
 
-        if peakWindspeed > 10 {
-            sentence += fmt.Sprintf("The peak windspeed of the day is %.2f meters per second.  ", peakWindspeed)
-        } else {
-            sentence += "The windspeed is not expected to exceed 10 meters per second."
-        }
 
         windy := weatherdata.WillItBeWindy(meteoData)
         if len(windy) > 0 {
@@ -138,6 +151,11 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
 
         if len(willRain) > 0 {
             sentence += fmt.Sprintf("It will rain at %s. ", strings.Join(willRain, ", "))
+        }
+
+
+        if len(meteoData.Data1H.PrecipitationProbability) > 0 {
+            sentence += fmt.Sprintf("The current rain probability is %d percent.", meteoData.Data1H.PrecipitationProbability[currentTimeSpot])
         }
 
         willSnow := weatherdata.WillItSnow(meteoData)
@@ -161,21 +179,6 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         }
 
     }
-
-    if len(meteoData.Data1H.PrecipitationProbability) > 0 {
-        sentence += fmt.Sprintf("The precipitation probability is %d percent.", meteoData.Data1H.PrecipitationProbability[currentTimeSpot])
-    }
-
-    if len(hotAreaNames) > 0 {
-        sentence += fmt.Sprintf("Be aware of hot areas like %s. ", strings.Join(hotAreaNames, ", "))
-    }
-
-    sentence += fmt.Sprintf("The current time is %s and the date is %s. ", currentTime.Format("15:04"), currentTime.Format("2006-01-02"))
-    sentence += "Generate a few sentences like a nice friend (dont claim to be one) packed around the data, sounding very personalized, without actually mentioning any numbers, except for the time and date"
-    sentence += "If there is a high windspeed or UV Index, mention it and give hints to prevent sunburn or getting hurt in case of strong winds."
-    sentence += "Only say things that fit to the actual weather no hypotheticals. So dont give useless advice like 'wear a jacket' if its 30 degrees outside. Or 'stay in the shade' if its raining."
-    sentence += "Be friendly since you are talking to an elderly or non technical person, so do not mention any technicalities like sensors. If the temperatures are very high (over 30) please mention the risks of heat strokes and tell them to be cautious."
-    sentence += "Please keep it short, maximum of 400 characters! Your name is Wera."
 
     interpretedText := llm.GenerateSentence(sentence)
     log.Println("Original Sentence", sentence )

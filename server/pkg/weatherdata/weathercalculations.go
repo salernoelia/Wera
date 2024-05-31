@@ -14,6 +14,19 @@ func AverageTemperature(data models.CityClimateData) float64 {
     return sum / float64(len(data.Features))
 }
 
+func TemperatureNext3H(data []float64) (float64, error) {
+    if len(data) < 3 {
+        return 0, fmt.Errorf("not enough data points to calculate the next 3 hours")
+    }
+
+    sum := 0.0
+    for i := 0; i < 3; i++ {
+        sum += data[i]
+    }
+
+    return sum / 3, nil
+}
+
 
 // temperatureNext1H calculates the average temperature for the next 3 hours given an array of float64 temperatures.
 func TemperatureNext6H(data []float64) (float64, error) {
@@ -32,9 +45,14 @@ func TemperatureNext6H(data []float64) (float64, error) {
 // PeakMeteoWindspeed returns the maximum windspeed in the data.
 func PeakMeteoWindspeed(data models.MeteoBlueData) float64 {
     var max float64
-    for _, windspeed := range data.Data1H.Windspeed {
+    for i, windspeed := range data.Data1H.Windspeed {
         if windspeed > max {
             max = windspeed
+
+            // stop after 12 hours
+            if i > 12 {
+                break
+            }
         }
     }
     return max
@@ -49,6 +67,11 @@ func PeakMeteoTemperature(data models.MeteoBlueData) (float64, string) {
         if i == 0 || temp > max {  // Initialize max with the first element or update it
             max = temp
             timeOfMax = data.Data1H.Time[i]  // Assuming a corresponding Time slice
+
+            // stop after 12 hours
+            if i > 12 {
+                break
+            }
         }
     }
 
@@ -61,7 +84,11 @@ func WillItRain(data models.MeteoBlueData) ([]string) {
     var times []string
     for i, probability := range data.Data1H.PrecipitationProbability {
         if probability > 50 {
+
             times = append(times, data.Data1H.Time[i])
+            if len(times) == 8 {
+                break
+            }
         }
     }
     return times
@@ -73,6 +100,9 @@ func WillItSnow(data models.MeteoBlueData) ([]string) {
     for i, snowFraction := range data.Data1H.SnowFraction {
         if snowFraction > 0.5 {
             times = append(times, data.Data1H.Time[i])
+            if len(times) == 8 {
+                break
+            }
         }
     }
     return times
@@ -84,17 +114,23 @@ func WillItBeFoggy(data models.MeteoBlueData) ([]string) {
     for i, pictocode := range data.Data1H.Pictocode {
         if pictocode == 3 {
             times = append(times, data.Data1H.Time[i])
+            if len(times) == 8 {
+                break
+            }
         }
     }
     return times
 }
 
-// willItBeWindy returns a slice of timestamps when the windspeed exceeds 10.
+// willItBeWindy returns a slice of timestamps when the windspeed exceeds 8.
 func WillItBeWindy(data models.MeteoBlueData) ([]string) {
     var times []string
     for i, windspeed := range data.Data1H.Windspeed {
         if windspeed > 6 {
             times = append(times, data.Data1H.Time[i])
+            if len(times) == 8 {
+                break
+            }
         }
     }
     return times
@@ -105,8 +141,11 @@ func WillItBeWindy(data models.MeteoBlueData) ([]string) {
 func WillHaveHighUVIndex(data models.MeteoBlueData) ([]string) {
     var times []string
     for i, uvIndex := range data.Data1H.UVIndex {
-        if uvIndex > 4 {
+        if uvIndex > 5 {
             times = append(times, data.Data1H.Time[i])
+            if len(times) == 8 {
+                break
+            }
         }
     }
     return times
