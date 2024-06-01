@@ -22,7 +22,7 @@ func GenerateSentence(data string) string {
         "messages": []map[string]string{
             {"role": "user", "content": data},
         },
-        "model": "llama3-8b-8192", // Ensure you are using the correct model
+        "model": "llama3-70b-8192", // Ensure you are using the correct model
     }
     jsonData, err := json.Marshal(payload)
     if err != nil {

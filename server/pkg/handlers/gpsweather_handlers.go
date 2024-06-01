@@ -96,14 +96,14 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     sentence += "Only in case of extreme weather conditions, like heat (28 degrees or above), you should give advice to the user and remind them of preventive measures. "
     sentence += "An example would be if there is a high windspeed or UV Index or if it is snowing or raining. "
     sentence += "Only say things that fit to the actual weather no hypotheticals. So dont give useless advice like 'wear a jacket' if its 30 degrees outside. Or 'stay in the shade' if its raining. "
-    sentence += "Since you are talking to a non technical person, do not mention any technical words like sensors, percipitation or numbers and data like the temperature. "
-    sentence += "Do not exceed 350 characters in your resonse, and formulate in a way like its being spoken. "
+    sentence += "Since you are talking to a non technical person, do not mention any technical words like sensors, percipitation or numbers and data like the celsius. "
+    sentence += "Do not exceed 700 characters in your resonse, and formulate in a way like its being spoken. "
     sentence += "The current time is " + currentTime.Format("15:04") + " and the date is " + currentTime.Format("2006-01-02") + "but you only mention daytimes like 'morning' or 'afternoon'. "
     sentence += "Data you have acess to, to form your weather report:"
 
 
     if closestSensor != nil {
-        sentence += fmt.Sprintf("The closest City Temperature sensor is at %s, located %.2f km away. It reports a temperature of %.2f", closestSensor.Name, distance, closestSensor.Values)
+        sentence += fmt.Sprintf("The closest City Temperature sensor is at %s, located %.2f km away. It reports a temperature of %.2f, mention this by saying something like 'around your house it is ...' ", closestSensor.Name, distance, closestSensor.Values)
     }
 
     if len(hotAreaNames) > 0 {
