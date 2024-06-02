@@ -22,7 +22,7 @@ class HitzebedingteTode(MovingCameraScene):
             2020: 26, 2021: 13, 2022: 58
         }
         
-        # self.camera.background_color = "#1E1E1E"
+        # self.camera.background_color = "#ffffff"
 
         
 
@@ -51,24 +51,24 @@ class HitzebedingteTode(MovingCameraScene):
 
         # Adding custom year labels
         for year in switzerland_data:
-            label = Text(str(year), font_size=18, font="Helvetica Neue")
+            label = Text(str(year), font_size=18, font="Lora")
             label.next_to(ax.c2p(year, 0), DOWN)
             label.rotate(-PI / 4)
             self.add(label)
 
         for cases in range(0, 1500, 100):
-            label = Text(str(cases), font_size=24, font="Helvetica Neue")
+            label = Text(str(cases), font_size=24, font="Lora")
             label.next_to(ax.c2p(1999, cases), LEFT)
             self.add(label)
             
       
 
         # Title
-        title = Text("Hitzebedingte Todesfälle", font_size=24, font="Helvetica Neue").to_edge(UP)
+        title = Text("Heat-related deaths", font_size=24, font="Lora").to_edge(UP)
         self.add(title)
 
         # Legend
-        legend = Text("Quelle: BAFU und BAG", font_size=9, font="Helvetica Neue").to_corner(DOWN + RIGHT)
+        legend = Text("Source: BAFU und BAG", font_size=9, font="Lora").to_corner(DOWN + RIGHT)
 
         self.add(legend)
 
@@ -86,8 +86,8 @@ class HitzebedingteTode(MovingCameraScene):
      
         
         # Labels for Zurich and Switzerland graphs
-        zurich_label = Text("Zürich", font_size=18, font="Helvetica Neue").next_to(zurich_graph.points[-1], RIGHT)
-        swiss_label = Text("Schweiz", font_size=18, font="Helvetica Neue").next_to(swiss_graph.points[-1], RIGHT)
+        zurich_label = Text("Zürich", font_size=18, font="Lora").next_to(zurich_graph.points[-1], RIGHT)
+        swiss_label = Text("Schweiz", font_size=18, font="Lora").next_to(swiss_graph.points[-1], RIGHT)
         
         
 
@@ -142,29 +142,39 @@ from manim import *
 class HeatDissipationInCity(Scene):
     def construct(self):
         # Set the background color
-        self.camera.background_color = "#1E1E1E"
+        # self.camera.background_color = "#ffffff"
+
 
         # Create the floor
-        floor = Line(start=7*LEFT, end=7*RIGHT, stroke_width=4).shift(2*DOWN)
-        self.add(floor)
+        # floor = Line(start=7*LEFT, end=7*RIGHT, stroke_width=4, stroke_color=GRAY_E).shift(2*DOWN)
+        floor = Rectangle(height=10, width=16, color=GRAY_E, fill_opacity=0.75, stroke_opacity=0.75).shift(8*DOWN)
+        self.play(Create(floor))
 
         # Create buildings with more spacing in between
         buildings = VGroup(
-            Rectangle(height=2, width=1.5, fill_color=GRAY, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(5.5*LEFT),
-            Rectangle(height=3, width=1.5, fill_color=GRAY, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(3*LEFT),
-            Rectangle(height=2.5, width=1.5, fill_color=GRAY, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(0),
-            Rectangle(height=3.5, width=1.5, fill_color=GRAY, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(3*RIGHT),
-            Rectangle(height=2, width=1.5, fill_color=GRAY, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(5.5*RIGHT)
+            Rectangle(height=2, width=1.5, color=GRAY_E, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(5.5*LEFT),
+            Rectangle(height=3, width=1.5, color=GRAY_E, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(3*LEFT),
+            Rectangle(height=2.5, width=1.5, color=GRAY_E, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(0),
+            Rectangle(height=3.5, width=1.5, color=GRAY_E, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(3*RIGHT),
+            Rectangle(height=2, width=1.5, color=GRAY_E, fill_opacity=0.75).next_to(floor, UP, buff=0).shift(5.5*RIGHT)
         )
-        self.add(buildings)
+        self.play(Create(buildings))
 
         # Create the initial heat line
-        heat_line = Line(start=7*LEFT + 2*UP, end=3*LEFT + 2*DOWN, color=YELLOW)
+        heat_line = Line(start=7*LEFT + 2*UP, end=3*LEFT + 2*DOWN, color=YELLOW_C)
         self.play(Create(heat_line))
 
         # Heat line vanishes when it hits the floor
         self.play(FadeOut(heat_line))
 
+        
+        
+        self.play(FadeToColor(buildings, "#7c0606", run_time=2), FadeToColor(floor, "#7c0606", run_time=2))
+
+
+        # self.play(LaggedStartMap(GrowArrow, rays, lag_ratio=0.1))
+
+        self.wait(1)
         # Create radiating rays from buildings
         rays = VGroup()
         for building in buildings:
@@ -172,22 +182,21 @@ class HeatDissipationInCity(Scene):
                 ray_left = Arrow(
                     start=building.get_left() + y_offset * UP,
                     end=building.get_left() + 0.5 * LEFT + (0.5 - y_offset) * DOWN,
-                    color=ORANGE,
+                    color="#7c0606",
                     buff=0
                 ).scale(0.4).set_stroke(width=4)
                 ray_right = Arrow(
                     start=building.get_right() + y_offset * UP,
                     end=building.get_right() + 0.5 * RIGHT + (0.5 - y_offset) * DOWN,
-                    color=ORANGE,
+                    color="#7c0606",
                     buff=0
                 ).scale(0.4).set_stroke(width=4)
                 rays.add(ray_left, ray_right)
 
 
-
-        self.play(LaggedStartMap(GrowArrow, rays, lag_ratio=0.1))
-
-        self.wait(2)
+            
+        self.play(FadeIn(rays))
+        self.wait(1)
 
 
 
@@ -199,6 +208,9 @@ class MultiNodeConnectedNetwork(Scene):
         # Set up a large number of nodes and random edges to create an organic-looking network
         import networkx as nx
         import random
+        
+        self.camera.background_color = "#ffffff"
+        
 
         # Create a random graph using networkx
         G = nx.erdos_renyi_graph(16, 0.3)
@@ -213,8 +225,8 @@ class MultiNodeConnectedNetwork(Scene):
             layout="spring",
             layout_scale=5,
             vertex_config={
-                "color": WHITE,
-                "stroke_color": WHITE,
+                "color": BLACK,
+                "stroke_color": BLACK,
                 "stroke_width": 5,
             },
             edge_config={"color": GREY}
@@ -229,7 +241,7 @@ class MultiNodeConnectedNetwork(Scene):
         self.play(graph.animate.scale(0.8).to_edge(LEFT))
 
         # Draw a longer arrow in the center
-        arrow = Arrow(LEFT, 2 * RIGHT, color=WHITE).move_to(ORIGIN)
+        arrow = Arrow(LEFT, 2 * RIGHT, color=BLACK).move_to(ORIGIN)
         self.play(GrowArrow(arrow))
 
         self.wait(2)

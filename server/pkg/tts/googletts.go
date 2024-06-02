@@ -29,8 +29,8 @@ func GoogleTextToSpeech(text, filePath string) error {
         Voice: &texttospeechpb.VoiceSelectionParams{
             // LanguageCode: "de-DE",
             // Name:         "de-DE-Studio-B",
-			LanguageCode: 	"en-US",
-   			Name: 			"en-US-Studio-O",
+			LanguageCode: 	"en-GB",
+   			Name: 			"en-GB-Studio-B",
         },
         AudioConfig: &texttospeechpb.AudioConfig{
             AudioEncoding: texttospeechpb.AudioEncoding_LINEAR16,
