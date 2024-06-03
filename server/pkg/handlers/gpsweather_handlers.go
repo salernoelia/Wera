@@ -19,7 +19,7 @@ import (
 )
 
 func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
-    var body models.RadioRequestBody
+    var body models.RadioRequestBodyGPS
     err := json.NewDecoder(r.Body).Decode(&body)
     if err != nil {
         http.Error(w, "Invalid JSON input", http.StatusBadRequest)
@@ -90,6 +90,10 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     for _, area := range hotAreas {
         hotAreaNames = append(hotAreaNames, area.Name)
     }
+
+    fmt.Println(body.Language)
+
+    
 
     sentence := "The name of the user is " + body.DeviceID + ". "
     sentence += "Your name is wera and you are a good friend of the user, are experienced in weather and want to help stay informed in a formal way, don't be overly excited or positive. "
@@ -180,7 +184,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
 
     }
 
-    interpretedText := llm.GenerateSentence(sentence)
+    interpretedText := llm.GenerateSentence(sentence, body.Language)
     log.Println("Original Sentence", sentence )
     log.Println("Interpreted Text: ", interpretedText)
 
@@ -205,7 +209,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     //     Codec:   "libmp3lame",
     // }, filePath)
 
-    err = tts.GoogleTextToSpeech(interpretedText, filePath)
+    err = tts.GoogleTextToSpeech(interpretedText, filePath, body.Language)
 
     if err != nil {
         log.Printf("Error converting text to speech: %v\n", err)
@@ -228,3 +232,4 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Failed to send audio file", http.StatusInternalServerError)
     }
 }
+

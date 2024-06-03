@@ -10,7 +10,7 @@ import (
 )
 
 // GoogleTextToSpeech converts the given text to speech, saves to the specified filePath
-func GoogleTextToSpeech(text, filePath string) error {
+func GoogleTextToSpeech(text, filePath string, language string) error {
 
    ctx := context.Background()
 
@@ -21,7 +21,18 @@ func GoogleTextToSpeech(text, filePath string) error {
     }
     defer client.Close()
 
-    // Build the request without effects profile
+    var TTSCode string
+    var TTSName string
+
+    if language == "german" {
+        TTSCode = "de-DE"
+        TTSName = "de-DE-Studio-B"
+    } else if language == "english" {
+        TTSCode = "en-GB"
+        TTSName = "en-GB-Standard-B"
+
+    }
+     // Build the request without effects profile
     req := &texttospeechpb.SynthesizeSpeechRequest{
         Input: &texttospeechpb.SynthesisInput{
             InputSource: &texttospeechpb.SynthesisInput_Text{Text: text},
@@ -29,13 +40,14 @@ func GoogleTextToSpeech(text, filePath string) error {
         Voice: &texttospeechpb.VoiceSelectionParams{
             // LanguageCode: "de-DE",
             // Name:         "de-DE-Studio-B",
-			LanguageCode: 	"en-GB",
-   			Name: 			"en-GB-Studio-B",
+			LanguageCode: 	TTSCode,
+   			Name: 			TTSName,
         },
         AudioConfig: &texttospeechpb.AudioConfig{
             AudioEncoding: texttospeechpb.AudioEncoding_LINEAR16,
         },
     }
+
 
     // log.Printf("SynthesizeSpeechRequest: %+v\n", req)
 

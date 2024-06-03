@@ -9,7 +9,7 @@ import (
 	"server/pkg/weatherdata"
 )
 func FetchAndReportHotAreasBasedOnLocation(w http.ResponseWriter, r *http.Request) {
-    var body models.RadioRequestBody
+    var body models.RadioRequestBodyGPS
     if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
         http.Error(w, "Invalid JSON input: "+err.Error(), http.StatusBadRequest)
         return

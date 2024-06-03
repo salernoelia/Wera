@@ -164,8 +164,15 @@ type SpeechRequest struct {
     Codec   string `json:"Codec"`
 }
 
-type RadioRequestBody struct {
+type RadioRequestBodyGPS struct {
     DeviceID  string  `json:"device_id"`
     Latitude  float64 `json:"latitude"`
     Longitude float64 `json:"longitude"`
+    Language  string  `json:"Language"`
+}
+
+
+type RadioRequestBody struct {
+    DeviceID  string  `json:"device_id"`
+    Language  string  `json:"Language"`
 }

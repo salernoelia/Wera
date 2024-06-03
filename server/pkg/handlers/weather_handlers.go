@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"server/pkg/llm"
+	"server/pkg/models"
 	"server/pkg/tts"
 	"server/pkg/weatherdata"
 	"strings"
@@ -16,6 +18,14 @@ import (
 )
 
 func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
+    var body models.RadioRequestBody
+    err := json.NewDecoder(r.Body).Decode(&body)
+    if err != nil {
+        http.Error(w, "Invalid JSON input", http.StatusBadRequest)
+        return
+    }
+
+
     meteoData, err := weatherdata.FetchMeteoBlueData()
     if err != nil {
         log.Printf("Error fetching MeteoBlue data: %v\n", err)
@@ -49,6 +59,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Failed to fetch CityClimate data", http.StatusInternalServerError)
         return
     }
+    
 
 
     var sentence string
@@ -151,7 +162,7 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
 
     }
 
-    interpretedText := llm.GenerateSentence(sentence)
+    interpretedText := llm.GenerateSentence(sentence, body.Language)
     log.Println("Interpreted Text: ", interpretedText)
 
     rand.Seed(time.Now().UnixNano())
@@ -166,17 +177,8 @@ func FetchAndSpeakWeatherData(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Using predefined settings for the Unreal Speech API
-    // err = unrealspeech.GenerateSpeech(models.SpeechRequest{
-    //     Text:    interpretedText,
-    //     VoiceId: "Scarlett",
-    //     Bitrate: "64k",
-    //     Speed:   "0",
-    //     Pitch:   "1",
-    //     Codec:   "libmp3lame",
-    // }, filePath)
+    err = tts.GoogleTextToSpeech(interpretedText, filePath, body.Language)
 
-    err = tts.GoogleTextToSpeech(interpretedText, filePath)
 
     if err != nil {
         log.Printf("Error converting text to speech: %v\n", err)

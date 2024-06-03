@@ -23,6 +23,11 @@ type GPSPayload struct {
     DeviceID  string  `json:"device_id"`
     Latitude  float64 `json:"Latitude"`
     Longitude float64 `json:"Longitude"`
+    Language  string  `json:"Language"`
+}
+type Payload struct {
+    DeviceID  string  `json:"device_id"`
+    Language  string  `json:"Language"`
 }
 
 
@@ -67,12 +72,13 @@ var (
 
 
 
-func postAndPlayAudio(url string, lat, lon float64) {
+func postAndPlayAudioGPS(url string, lat, lon float64, language string) {
 
     payload := GPSPayload{
         DeviceID:  "Lorena",
         Latitude:  lat,
         Longitude: lon,
+        Language: language,
     }
     jsonData, err := json.Marshal(payload)
     if err != nil {
@@ -126,27 +132,48 @@ func postAndPlayAudio(url string, lat, lon float64) {
 		fmt.Printf("Failed to play audio: %v\n", err)
 	}
 }
+func postAndPlayAudio(url string, language string) {
 
-func getAndPlayAudio(url string) {
-    resp, err := http.Get(url)
-	if err != nil {
-		fmt.Printf("Failed to fetch audio: %v\n", err)
-		return
-	}
-	defer resp.Body.Close()
+    payload := Payload{
+        DeviceID:  "Lorena",
+        Language: language,
 
-	if resp.StatusCode != http.StatusOK {
-		fmt.Printf("Failed to fetch audio: %d\n", resp.StatusCode)
-		return
-	}
+    }
 
-	audioData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Failed to read audio data: %v\n", err)
-		return
-	}
+    jsonData, err := json.Marshal(payload)
+    if err != nil {
+        fmt.Printf("Error marshaling JSON: %v\n", err)
+        return
+    }
 
-	tmpFile, err := ioutil.TempFile("", "audio-*.wav")
+    fmt.Println(bytes.NewBuffer(jsonData))
+
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Failed to create request: %v\n", err)
+        return
+    }
+    req.Header.Set("Content-Type", "application/json")
+
+    resp, err := http.DefaultClient.Do(req)
+    if err != nil {
+        fmt.Printf("Failed to fetch audio: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        fmt.Printf("Failed to fetch audio: %d - %s\n", resp.StatusCode, resp.Status)
+        return
+    }
+
+    audioData, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Failed to read audio data: %v\n", err)
+        return
+    }
+
+    tmpFile, err := ioutil.TempFile("", "audio-*.wav")
 	if err != nil {
 		fmt.Printf("Failed to create a temp file: %v\n", err)
 		return
@@ -165,6 +192,8 @@ func getAndPlayAudio(url string) {
 		fmt.Printf("Failed to play audio: %v\n", err)
 	}
 }
+
+
 
 
 func main() {
@@ -307,12 +336,7 @@ func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
     fmt.Println("Playing english init...")
     playAudio(englishChangelang)
 
-
-
     for {
-  
-        // readEncoderLanguageSelection()
-        // printLanguageSelectionDelta()
 
         if encoderA.Read() == rpio.Low {
             fmt.Println(languageInputDelta)
@@ -351,23 +375,6 @@ func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
     }
 }
 
-// func readLanguageFromEncoder(encoderA, encoderB *rpio.Pin) string {
-//     if encoderA.Read() == rpio.Low {
-//         return "German"
-//     }
-//     if encoderB.Read() == rpio.Low {
-//         return "English"
-//     }
-//     return "" // No change
-// }
-
-// func debounce(pin *rpio.Pin) {
-//     time.Sleep(100 * time.Millisecond) // Wait for the signal to stabilize
-//     for pin.Read() == rpio.Low {
-//         time.Sleep(10 * time.Millisecond) // Additional checks during the low state
-//     }
-// }
-
 
 // Function to handle button presses asynchronously with improved debouncing
 func handleButtonPress(button *rpio.Pin) {
@@ -389,10 +396,10 @@ func handleButtonActions() {
     isConnected := checkInternetConnection("https://spatial-interaction.onrender.com/ok")
     if gpsActive && isConnected {
         fmt.Println("Trying to post to /weathergps...", lastValidLat, lastValidLon)
-        postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps-" + selectedLanguage, lastValidLat, lastValidLon)
+        postAndPlayAudioGPS("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon, selectedLanguage)
     } else if !gpsActive && isConnected {
         fmt.Println("Trying to get to /weather since no GPS data is available...")
-        getAndPlayAudio("https://spatial-interaction.onrender.com/weather-" + selectedLanguage)
+        postAndPlayAudio("https://spatial-interaction.onrender.com/weather", selectedLanguage)
     } else {
         fmt.Println("Internet Status:", isConnected)
         fmt.Println("GPS Status:", gpsActive)
@@ -483,17 +490,6 @@ func printDelta() {
 		lastVolumeChangeTime = time.Now()
 	}
 }
-
-// func printLanguageSelectionDelta() {
-//     if printFlag && time.Since(lastVolumeChangeTime) > DEBOUNCE_DELAY {
-//         printFlag = false
-//         language := mapDeltaToLanguage(int(inputDelta))
-//         fmt.Println(language)
-//         setLanguage(language)
-//         lastVolumeChangeTime = time.Now()
-//     }
-
-// }
 
 
 

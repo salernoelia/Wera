@@ -11,6 +11,7 @@ import (
 // RequestBody struct to hold the JSON request body
 type RequestBody struct {
 	Text string `json:"text"`
+	Language string `json:"language"`
 }
 
 func TTSTest(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +32,7 @@ func TTSTest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert text to speech
-	err = tts.GoogleTextToSpeech(requestBody.Text, "output.wav")
+	err = tts.GoogleTextToSpeech(requestBody.Text, "output.wav", requestBody.Language)
 	if err != nil {
 		log.Fatalf("Failed to convert text to speech: %v", err)
 	}

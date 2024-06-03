@@ -11,11 +11,18 @@ import (
 )
 
 // GenerateSentence sends weather data to the Groq API and returns a human-readable sentence.
-func GenerateSentence(data string) string {
+func GenerateSentence(data string, language string) string {
     apiKey := os.Getenv("GROQ_API_KEY")
     if apiKey == "" {
         log.Fatal("GROQ_API_KEY environment variable is not set.")
     }
+
+      if language == "german" {
+        data += " Answer in German please"
+    } else if language == "english" {
+        data += " Answer in English please"
+    }
+
 
     url := "https://api.groq.com/openai/v1/chat/completions"
     payload := map[string]interface{}{
