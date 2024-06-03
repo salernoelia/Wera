@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,32 +30,45 @@ var lastValidLat, lastValidLon float64
 
 var gpsActive bool = false
 
+
+
+
 var GPSCheckLED rpio.Pin
 var internetCheckLED rpio.Pin
 
  const (
     CLK = 2  // GPIO 2
 	DT  = 3  // GPIO 3
-    button   = 22  // GPIO 22 for the switch
+    button   = 27  // GPIO 27 for the switch
     GPSLED = 26
     INTERNETLED =  13
     DEBOUNCE_DELAY = 100 * time.Millisecond // Debounce delay
+    englishActive = "english-active.wav"
+    germanActive = "german-active.wav"
+    englishChangelang = "english-changelang.wav"
+    germanChangelang = "german-changelang.wav"
+    englishSelected = "english-selected.wav"
+    germanSelected = "german-selected.wav"
 )
 
 
 
 var (
 	inputDelta = 70
+    languageInputDelta = 0
 	printFlag  bool
 	state      uint8
 	encoderA   rpio.Pin
 	encoderB   rpio.Pin
     lastVolumeChangeTime time.Time
-    
+    selectedLanguage string
 )
 
 
+
+
 func postAndPlayAudio(url string, lat, lon float64) {
+
     payload := GPSPayload{
         DeviceID:  "Lorena",
         Latitude:  lat,
@@ -209,6 +223,8 @@ reader := bufio.NewReader(port)
 var gpsDataBlock string
 
 
+
+
   go func() {
         for {
             c, err := reader.ReadByte()
@@ -236,6 +252,9 @@ var gpsDataBlock string
         }
     }()
 
+    // Set the language to German or English
+    setLanguage(&pushButton, &encoderA, &encoderB)
+
 
 
     // Asynchronous Routine to check internet connection
@@ -245,7 +264,7 @@ var gpsDataBlock string
     go handleButtonPress(&pushButton)
 
     // Set initial volume to a midpoint (e.g., 50%)
-	setVolume(50)
+	setVolume(80)
 
   
     for {
@@ -256,10 +275,102 @@ var gpsDataBlock string
 
 }
 
+func playAudio(inputFile string) {
+
+    cmd := exec.Command("aplay", "-D", "plughw:CARD=Headphones,DEV=0", inputFile)
+    var stdout, stderr bytes.Buffer
+    cmd.Stdout = &stdout
+    cmd.Stderr = &stderr
+
+    if err := cmd.Run(); err != nil {
+        log.Printf("Failed to play audio: %s\nStderr: %s\n", err, stderr.String())
+    } else {
+        fmt.Printf("Audio played successfully. Output: %s\n", stdout.String())
+    }
+}
+
+
+
+func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
+    // var currentLanguage string = "english" // default language
+	setVolume(90)
+
+	fmt.Println(100)
+    selectedLanguage = "german"
+    // languageCode = 0
+
+
+    fmt.Println("Playing german init...")
+    playAudio(germanChangelang)
+  
+
+    fmt.Println("Playing english init...")
+    playAudio(englishChangelang)
+
+
+
+    for {
+  
+        // readEncoderLanguageSelection()
+        // printLanguageSelectionDelta()
+
+        if encoderA.Read() == rpio.Low {
+            fmt.Println(languageInputDelta)
+
+                fmt.Printf("Selected Language: %s\n", "Deutsch")
+                selectedLanguage = "german"
+                playAudio(germanActive)
+        } else if encoderB.Read() == rpio.Low {
+                fmt.Printf("Selected Language: %s\n", "English")
+                selectedLanguage = "english"
+                playAudio(englishActive)
+        }
+
+        time.Sleep(1 * time.Millisecond) // Small sleep to prevent high CPU load
+
+
+        // Check if the button is pressed to confirm the selection
+        if button.Read() == rpio.Low {
+
+            if selectedLanguage == "german" {
+                playAudio(germanSelected)
+                fmt.Print("Button is pressed")
+                time.Sleep(10 * time.Millisecond) // Polling delay to reduce CPU usag
+                return
+            } else if selectedLanguage == "english" {
+                playAudio(englishSelected)
+                fmt.Print("Button is pressed")
+                time.Sleep(10 * time.Millisecond) // Polling delay to reduce CPU usag
+                return
+            }
+           
+
+        }
+
+        // time.Sleep(DEBOUNCE_DELAY) // Sleep to reduce CPU usage and debounce handling
+    }
+}
+
+// func readLanguageFromEncoder(encoderA, encoderB *rpio.Pin) string {
+//     if encoderA.Read() == rpio.Low {
+//         return "German"
+//     }
+//     if encoderB.Read() == rpio.Low {
+//         return "English"
+//     }
+//     return "" // No change
+// }
+
+// func debounce(pin *rpio.Pin) {
+//     time.Sleep(100 * time.Millisecond) // Wait for the signal to stabilize
+//     for pin.Read() == rpio.Low {
+//         time.Sleep(10 * time.Millisecond) // Additional checks during the low state
+//     }
+// }
+
+
 // Function to handle button presses asynchronously with improved debouncing
 func handleButtonPress(button *rpio.Pin) {
-
-    
 
     for {
         if button.Read() == rpio.Low {
@@ -278,10 +389,10 @@ func handleButtonActions() {
     isConnected := checkInternetConnection("https://spatial-interaction.onrender.com/ok")
     if gpsActive && isConnected {
         fmt.Println("Trying to post to /weathergps...", lastValidLat, lastValidLon)
-        postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon)
+        postAndPlayAudio("https://spatial-interaction.onrender.com/weathergps-" + selectedLanguage, lastValidLat, lastValidLon)
     } else if !gpsActive && isConnected {
         fmt.Println("Trying to get to /weather since no GPS data is available...")
-        getAndPlayAudio("https://spatial-interaction.onrender.com/weather")
+        getAndPlayAudio("https://spatial-interaction.onrender.com/weather-" + selectedLanguage)
     } else {
         fmt.Println("Internet Status:", isConnected)
         fmt.Println("GPS Status:", gpsActive)
@@ -360,6 +471,9 @@ func readEncoder() {
 	}
 }
 
+
+
+
 func printDelta() {
 	if printFlag && time.Since(lastVolumeChangeTime) > DEBOUNCE_DELAY {
 		printFlag = false
@@ -370,6 +484,19 @@ func printDelta() {
 	}
 }
 
+// func printLanguageSelectionDelta() {
+//     if printFlag && time.Since(lastVolumeChangeTime) > DEBOUNCE_DELAY {
+//         printFlag = false
+//         language := mapDeltaToLanguage(int(inputDelta))
+//         fmt.Println(language)
+//         setLanguage(language)
+//         lastVolumeChangeTime = time.Now()
+//     }
+
+// }
+
+
+
 func mapDeltaToVolume(delta int) int {
 	// Map inputDelta to a range of 0 to 100
 	if delta < 0 {
@@ -379,6 +506,7 @@ func mapDeltaToVolume(delta int) int {
 	}
 	return delta
 }
+
 
 func setVolume(volume int) error {
 	cmd := exec.Command("amixer", "cset", "numid=1", fmt.Sprintf("%d%%", volume))
