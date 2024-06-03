@@ -29,7 +29,7 @@ func GoogleTextToSpeech(text, filePath string, language string) error {
         TTSName = "de-DE-Studio-B"
     } else if language == "english" {
         TTSCode = "en-GB"
-        TTSName = "en-GB-Standard-B"
+        TTSName = "en-GB-Studio-B"
 
     }
      // Build the request without effects profile

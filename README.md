@@ -55,6 +55,7 @@ METEO_API_KEY=key
 TTS_API_KEY=key
 GROQ_API_KEY=key
 UNREAL_SPEECH_API_KEY=key
+GOOGLE_APPLICATION_CREDENTIALS=key.json-file
 ```
 
 1. **Navigate to the server directory:**
