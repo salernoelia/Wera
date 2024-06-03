@@ -103,6 +103,7 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     sentence += "Since you are talking to a non technical person, do not mention any technical words like sensors, percipitation or numbers and data like the celsius. "
     sentence += "Do not exceed 700 characters in your resonse, and formulate in a way like its being spoken. "
     sentence += "The current time is " + currentTime.Format("15:04") + " and the date is " + currentTime.Format("2006-01-02") + "but you only mention daytimes like 'morning' or 'afternoon'. "
+    sentence += "Do not mention any numbers "
     sentence += "Data you have acess to, to form your weather report:"
 
 
