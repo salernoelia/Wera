@@ -46,14 +46,20 @@ var internetCheckLED rpio.Pin
 	DT  = 3  // GPIO 3
     button   = 27  // GPIO 27 for the switch
     GPSLED = 26
+    GPSVCC = 22
     INTERNETLED =  13
     DEBOUNCE_DELAY = 100 * time.Millisecond // Debounce delay
-    englishActive = "english-active.wav"
-    germanActive = "german-active.wav"
+    englishSelected = "english-active.wav"
+    germanSelected = "german-active.wav"
     englishChangelang = "english-changelang.wav"
     germanChangelang = "german-changelang.wav"
-    englishSelected = "english-selected.wav"
-    germanSelected = "german-selected.wav"
+    englishGettingready = "english-gettingready.wav"
+    germanGettingready = "german-gettingready.wav"
+    englishNotok = "english-notok.wav"
+    germanNotok = "german-notok.wav"
+    englishReady = "english-ready.wav"
+    germanReady = "german-ready.wav"
+    okEndpoint = "https://spatial-interaction.onrender.com/ok"
 )
 
 
@@ -67,6 +73,9 @@ var (
 	encoderB   rpio.Pin
     lastVolumeChangeTime time.Time
     selectedLanguage string
+    isConnected bool
+    isGoogleWorking bool
+    internetCheckingSeconds = 5
 )
 
 
@@ -135,7 +144,7 @@ func postAndPlayAudioGPS(url string, lat, lon float64, language string) {
 func postAndPlayAudio(url string, language string) {
 
     payload := Payload{
-        DeviceID:  "Lorena",
+        DeviceID:  "Peter",
         Language: language,
 
     }
@@ -211,10 +220,18 @@ func main() {
     encoderA = rpio.Pin(CLK)
     encoderB = rpio.Pin(DT)
 
+  
+
+
     encoderA.Input()
     encoderB.Input()
     encoderA.PullUp()
     encoderB.PullUp()
+
+    gpsVCC := rpio.Pin(GPSVCC)
+    gpsVCC.Output()
+    gpsVCC.High()
+
 
     // Setup the push button
     pushButton := rpio.Pin(button)
@@ -223,12 +240,13 @@ func main() {
 
     // Initialize LEDs
     GPSCheckLED = rpio.Pin(GPSLED)
-    GPSCheckLED.Output()
-    GPSCheckLED.Low()
+
+    GPSCheckLED.Output()                
 
     internetCheckLED = rpio.Pin(INTERNETLED)
     internetCheckLED.Output()
-    internetCheckLED.Low()
+    internetCheckLED.High()
+
 
     setupCloseHandler()
 
@@ -281,13 +299,20 @@ var gpsDataBlock string
         }
     }()
 
+    // Asynchronous Routine to check internet connection
+    go checkInternetConnectivityPeriodically()
+
     // Set the language to German or English
     setLanguage(&pushButton, &encoderA, &encoderB)
 
+    checkForReady()
 
+    time.Sleep(1 * time.Second)
 
-    // Asynchronous Routine to check internet connection
-    go checkInternetConnectivityPeriodically()
+    if !gpsActive {
+        playAudio(selectedLanguage + "-hint.wav")
+    }
+
 
     // Button press handling in a separate goroutine
     go handleButtonPress(&pushButton)
@@ -320,12 +345,13 @@ func playAudio(inputFile string) {
 
 
 
+
+
 func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
     // var currentLanguage string = "english" // default language
 	setVolume(90)
 
 	fmt.Println(100)
-    selectedLanguage = "german"
     // languageCode = 0
 
 
@@ -343,11 +369,11 @@ func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
 
                 fmt.Printf("Selected Language: %s\n", "Deutsch")
                 selectedLanguage = "german"
-                playAudio(germanActive)
+                playAudio(germanSelected)
         } else if encoderB.Read() == rpio.Low {
                 fmt.Printf("Selected Language: %s\n", "English")
                 selectedLanguage = "english"
-                playAudio(englishActive)
+                playAudio(englishSelected)
         }
 
         time.Sleep(1 * time.Millisecond) // Small sleep to prevent high CPU load
@@ -357,15 +383,22 @@ func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
         if button.Read() == rpio.Low {
 
             if selectedLanguage == "german" {
-                playAudio(germanSelected)
+                playAudio(germanGettingready)
                 fmt.Print("Button is pressed")
                 time.Sleep(10 * time.Millisecond) // Polling delay to reduce CPU usag
                 return
             } else if selectedLanguage == "english" {
-                playAudio(englishSelected)
+                playAudio(englishGettingready)
                 fmt.Print("Button is pressed")
                 time.Sleep(10 * time.Millisecond) // Polling delay to reduce CPU usag
                 return
+            } else {
+                fmt.Println("Playing german init...")
+                playAudio(germanChangelang)
+  
+
+                fmt.Println("Playing english init...")
+                playAudio(englishChangelang)
             }
            
 
@@ -373,6 +406,31 @@ func setLanguage(button *rpio.Pin, encoderA *rpio.Pin, encoderB *rpio.Pin) {
 
         // time.Sleep(DEBOUNCE_DELAY) // Sleep to reduce CPU usage and debounce handling
     }
+}
+
+func checkForReady() {
+ wentTroughReadyLoopThreeTimes := 0
+ for {
+    isStillConnected := checkInternetConnection(okEndpoint)
+	time.Sleep(1 * time.Second) // Polling delay to reduce CPU usag
+
+    if isStillConnected {
+        fmt.Println("Ready!")
+	    time.Sleep(2 * time.Second) // Polling delay to reduce CPU usag
+        playAudio(selectedLanguage + "-ready.wav")
+        internetCheckingSeconds = 60
+        return
+    }
+
+    internetCheckLED.High()
+    if wentTroughReadyLoopThreeTimes > 3  {
+    playAudio(selectedLanguage + "-notok.wav")
+
+    }
+	time.Sleep(30 * time.Second) // Polling delay to reduce CPU usag
+    wentTroughReadyLoopThreeTimes++
+
+ }
 }
 
 
@@ -393,7 +451,7 @@ func handleButtonPress(button *rpio.Pin) {
 
 // Function to handle actions upon button press
 func handleButtonActions() {
-    isConnected := checkInternetConnection("https://spatial-interaction.onrender.com/ok")
+    isConnected := checkInternetConnection(okEndpoint)
     if gpsActive && isConnected {
         fmt.Println("Trying to post to /weathergps...", lastValidLat, lastValidLon)
         postAndPlayAudioGPS("https://spatial-interaction.onrender.com/weathergps", lastValidLat, lastValidLon, selectedLanguage)
@@ -408,24 +466,31 @@ func handleButtonActions() {
 
 // Periodically checks internet connection
 func checkInternetConnectivityPeriodically() {
-    urlToCheck := "https://spatial-interaction.onrender.com/ok"
-    fmt.Println("Checked OK")
+    serverToCheck := "https://spatial-interaction.onrender.com/ok"
+    googleToCheck := "https://google.com/"
+    
     for {
-        isConnected := checkInternetConnection(urlToCheck)
+        isConnected = checkInternetConnection(serverToCheck)
         if isConnected {
             internetCheckLED.Low()
+            fmt.Println("Internet / Server OK")
+
         } else {
             internetCheckLED.High()
+            fmt.Println("Server not OK")
+            isGoogleWorking = checkInternetConnection(googleToCheck)
+            fmt.Print("Is Internet connected:", isGoogleWorking)
+
         }
-        time.Sleep(200 * time.Second) // Check every 200 seconds
+        time.Sleep(time.Duration(internetCheckingSeconds) * time.Second) // check afer certain time frame
     }
 }
 
 
 func checkInternetConnection(url string) bool {
-    timeout := time.Duration(80 * time.Second)
+    // timeout := time.Duration(80 * time.Second)
     client := http.Client{
-        Timeout: timeout,
+        // Timeout: timeout,
     }
     _, err := client.Get(url)
     if err != nil {
@@ -511,6 +576,7 @@ func setVolume(volume int) error {
 
 
 func processGPSData(data string) {
+    fmt.Println(data)
     if strings.HasPrefix(data, "$GPRMC") {
         fields := strings.Split(data, ",")
         if len(fields) > 6 && fields[2] == "A" { // Check for 'Active' status
