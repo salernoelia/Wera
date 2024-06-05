@@ -642,6 +642,5 @@ func setupCloseHandler() {
 
 func cleanup() {
     fmt.Println("Turning off...")
-    GPSCheckLED.Low() // Turn off LED
-    // Add any other cleanup tasks here
+    GPSCheckLED.Low()
 }
