@@ -367,8 +367,9 @@ Sample Response Body:
 
 - `github.com/jackc/pgx/v4` for PostgreSQL database interaction.
 - `github.com/gorilla/mux` for routing.
+- `google.golang.org/genproto/googleapis/cloud/texttospeech/v1` & `cloud.google.com/go/texttospeech/apiv1` for Google Text to Speech integration
 
-### Radio Device (Raspberry Pi 4)
+### Kub (Raspberry Pi 4)
 
 - `github.com/stianeikeland/go-rpio/v4`for GPIO pin support.
 - `go.bug.st/serial.v1`for Serial Support.
