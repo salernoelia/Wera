@@ -2,7 +2,7 @@
 
 # Wera
 
-A personalized city climate warning system.
+Cities are heating up during the summer, and deaths related to this are on the rise. To mitigate this ever-increasing risk, we have prototyped, built, and user-tested an entirely open-source, personalized city climate warning system called Wera. Wera can access the high-density temperature sensor network in Zurich, along with meteorological data and the user's location, to formulate a weather and risk potential report with Llama3, which is then synthesized into either German or English for the end user. Wera primarily targets seniors, as they are the most affected by the city's hotspots. It features a very intuitive and accessible interface, making it a reliable weather risk informer and a helpful weather assistant. Wera comes in two form factors: the Kub, its strengths being its constant visibility, personal feeling, and accessibility, and the Fong, which is widely deployable and offers the option to ask back questions directly on your phone.
 
 ## Table of Contents
 
@@ -11,6 +11,7 @@ A personalized city climate warning system.
   - [Hardware](#hardware)
     - [Kub](#kub)
   - [Server Quickstart:](#server-quickstart)
+    - [API's](#apis)
   - [Radio (Raspberry PI 4) Quickstart](#radio-raspberry-pi-4-quickstart)
     - [Fetch dependencies and build:](#fetch-dependencies-and-build)
 - [Docs](#docs)
@@ -20,14 +21,13 @@ A personalized city climate warning system.
   - [**POST /cityclimategps**](#post-cityclimategps)
     - [**GET /meteoblue**](#get-meteoblue)
     - [**POST /weathergps**](#post-weathergps)
-    - [**GET /weather**](#get-weather)
+    - [**POST /weather**](#post-weather)
     - [**GET /hotareas**](#get-hotareas)
     - [**POST /hotareasgps**](#post-hotareasgps)
     - [**POST /speak**](#post-speak)
   - [Dependencies](#dependencies)
     - [Server](#server)
-    - [Radio Device (Raspberry Pi 4)](#radio-device-raspberry-pi-4)
-    - [API's](#apis)
+    - [Kub (Raspberry Pi 4)](#kub-raspberry-pi-4)
     - [License](#license)
 
 ---
@@ -52,11 +52,19 @@ Be sure to get all API Keys, .env is formatted like this
 
 ```
 METEO_API_KEY=key
-TTS_API_KEY=key
+TTS_API_KEY=key // -> VoiceRSS API (backup TTS), package can be removed also
 GROQ_API_KEY=key
-UNREAL_SPEECH_API_KEY=key
+UNREAL_SPEECH_API_KEY=key // -> Unreal TTS (backup TTS), package can be removed also
 GOOGLE_APPLICATION_CREDENTIALS=key.json-file
 ```
+
+### API's
+
+- [MeteoBlue](https://www.meteoblue.com/de/weather-api/index/overview)
+- [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
+- [Groq](https://console.groq.com/docs/quickstart)
+- [Unreal TTS (backup TTS)](https://unrealspeech.com/onboard)
+- [Google TTS](https://cloud.google.com/text-to-speech?hl=de)
 
 1. **Navigate to the server directory:**
 
@@ -179,11 +187,7 @@ sudo systemctl status goradio.service
 
 # Docs
 
-(DEPRECATED) Selfhosted Service: http://estationserve.ddns.net:9000/
-
-OR
-
-Render Hosted Service (1min startup time): https://spatial-interaction.onrender.com
+Render Hosted Service (2min startup time): https://spatial-interaction.onrender.com
 
 ## Endpoints
 
@@ -203,9 +207,10 @@ Sample Request Body:
 
 ```JSON
 {
-"device_id": "Device_1",
+"device_id": "username",
 "Latitude": 47.3653466,
-"Longitude": 8.5282651
+"Longitude": 8.5282651,
+"Language": "english"
 }
 ```
 
@@ -238,7 +243,7 @@ Responds with a 3-hour forecast from Meteoblue data, also provides a 24-hour ove
 
 ### **POST /weathergps**
 
-Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute different data points, to create a current weather analysis and forecast. It uses the GPS data of the kub to deliver data for the current location of the radio, constructs a nice response, and generates a speech file (.MP3) which is returned as an audio stream.
+Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute different data points, to create a current weather analysis and forecast. It uses the GPS data of the kub to deliver data for the current location of the radio, constructs a nice response, and generates a speech file (.wav) which is returned as an audio stream.
 
 Sample Request Body:
 
@@ -246,7 +251,8 @@ Sample Request Body:
 {
   "device_id": "Device_1",
   "Latitude": 47.3653466,
-  "Longitude": 8.5282651
+  "Longitude": 8.5282651,
+  "Language": "english"
 }
 ```
 
@@ -256,9 +262,18 @@ Sample text it generates and speaks:
 "Good morning! It's a lovely day outside! The temperature has been quite pleasant, a gentle breeze is blowing and the temperature is just right - not too hot, not too cold. Just perfect. Make sure to stay hydrated and take a break if you're spending time outdoors. And remember, on especially warm days, please be extra careful to avoid heat exhaustion. Stay cool and comfortable!"
 ```
 
-### **GET /weather**
+### **POST /weather**
 
-Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute different data points, to create a current weather analysis and forecast, constructs a descriptive sentence, and generates a speech file (.MP3) which is returned as an audio stream. This endpoint is used as a relay in case weathergps fails.
+Fetches and combines data from both the MeteoBlue and CityClimate APIs, processes it to compute different data points, to create a current weather analysis and forecast, constructs a descriptive sentence, and generates a speech file (.wav) which is returned as an audio stream. This endpoint is used as a relay in case weathergps fails.
+
+Sample Request Body:
+
+```JSON
+{
+"device_id": "username",
+"Language": "english"
+}
+```
 
 The response contains:
 
@@ -341,20 +356,17 @@ Sample Request Body:
 
 ```JSON
 {
-    "Text": "Hello, this is a test of the Unreal Speech API integration. How does this sound?",
-    "VoiceId": "Amy",
-    "Bitrate": "64k",
-    "Speed": "0",
-    "Pitch": "1",
-    "Codec": "libmp3lame"
+  "text": "Note: As soon as the green light comes on, I can provide more detailed information, this normally takes 15 minutes. The kub can be used nevertheless ",
+  "language": "english"
 }
+
 ```
 
 Sample Response Body:
 
 ```JSON
 {
-  "file": "output.mp3",
+  "file": "output.wav",
   "message": "Speech generated successfully"
 }
 ```
@@ -373,13 +385,6 @@ Sample Response Body:
 
 - `github.com/stianeikeland/go-rpio/v4`for GPIO pin support.
 - `go.bug.st/serial.v1`for Serial Support.
-
-### API's
-
-- [MeteoBlue](https://www.meteoblue.com/de/weather-api/index/overview)
-- [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
-- [Groq](https://console.groq.com/docs/quickstart)
-- [Unreal TTS](https://unrealspeech.com/onboard)
 
 ### License
 
