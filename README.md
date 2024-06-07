@@ -4,6 +4,8 @@
 
 Cities are heating up during the summer, and deaths related to this are on the rise. To mitigate this ever-increasing risk, we have prototyped, built, and user-tested an entirely open-source, personalized city climate warning system called Wera. Wera can access the high-density temperature sensor network in Zurich, along with meteorological data and the user's location, to formulate a weather and risk potential report with Llama3, which is then synthesized into either German or English for the end user. Wera primarily targets seniors, as they are the most affected by the city's hotspots. It features a very intuitive and accessible interface, making it a reliable weather risk informer and a helpful weather assistant. Wera comes in two form factors: the Kub, its strengths being its constant visibility, personal feeling, and accessibility, and the Fong, which is widely deployable and offers the option to ask back questions directly on your phone.
 
+[Youtube Video](https://www.youtube.com/watch?v=xea25izHtzc)
+
 ## Table of Contents
 
 - [Wera](#wera)
