@@ -76,14 +76,10 @@ cd server
 
 2. **Initialize the Go module** (if not already done):
 
-```bash
-go mod init server
-```
-
 3. **Fetch dependencies:**
 
 ```bash
-go get github.com/jackc/pgx/v4 github.com/gorilla/mux github.com/joho/godotenv google.golang.org/genproto/googleapis/cloud/texttospeech/v1 cloud.google.com/go/texttospeech/apiv1
+go mod tidy
 ```
 
 4. **Build the server:**
@@ -111,7 +107,7 @@ cd kub
 2. **Initialize the Go module** (if not already done):
 
 ```bash
-go mod init kub
+go mod tidy
 ```
 
 3. **Fetch dependencies:**
