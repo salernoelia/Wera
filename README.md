@@ -14,6 +14,8 @@ Cities are heating up during the summer, and deaths related to this are on the r
     - [Kub](#kub)
   - [Server Quickstart:](#server-quickstart)
     - [API's](#apis)
+    - [**Build the server (with docker):**](#build-the-server-with-docker)
+    - [**Build and run the the server (without Docker):**](#build-and-run-the-the-server-without-docker)
   - [Radio (Raspberry PI 4) Quickstart](#radio-raspberry-pi-4-quickstart)
     - [Fetch dependencies and build:](#fetch-dependencies-and-build)
 - [Docs](#docs)
@@ -68,29 +70,20 @@ GOOGLE_APPLICATION_CREDENTIALS=key.json-file
 - [Unreal TTS (backup TTS)](https://unrealspeech.com/onboard)
 - [Google TTS](https://cloud.google.com/text-to-speech?hl=de)
 
-1. **Navigate to the server directory:**
+### **Build the server (with docker):**
 
 ```bash
 cd server
+docker build -t wera-server .
+docker run -d -p 8080:8080 wera-server
 ```
 
-2. **Initialize the Go module** (if not already done):
-
-3. **Fetch dependencies:**
+### **Build and run the the server (without Docker):**
 
 ```bash
+cd server
 go mod tidy
-```
-
-4. **Build the server:**
-
-```bash
 go build cmd/server/main.go
-```
-
-5. **Start the Server**
-
-```
 ./main
 ```
 
