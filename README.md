@@ -12,8 +12,8 @@ Cities are heating up during the summer, and deaths related to this are on the r
   - [Table of Contents](#table-of-contents)
   - [Hardware](#hardware)
     - [Kub](#kub)
-  - [Server Quickstart:](#server-quickstart)
     - [API's](#apis)
+  - [Server Quickstart:](#server-quickstart)
     - [**Build the server (with docker):**](#build-the-server-with-docker)
     - [**Build and run the the server (without Docker):**](#build-and-run-the-the-server-without-docker)
   - [Radio (Raspberry PI 4) Quickstart](#radio-raspberry-pi-4-quickstart)
@@ -50,9 +50,17 @@ Cities are heating up during the summer, and deaths related to this are on the r
 
 ---
 
+### API's
+
+- [MeteoBlue](https://www.meteoblue.com/de/weather-api/index/overview)
+- [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
+- [Groq](https://console.groq.com/docs/quickstart)
+- [Unreal TTS (backup TTS)](https://unrealspeech.com/onboard)
+- [Google TTS](https://cloud.google.com/text-to-speech?hl=de)
+
 ## Server Quickstart:
 
-Be sure to get all API Keys, .env is formatted like this
+Be sure to get all API Keys, .env is formatted like this in the `/server` directory
 
 ```
 METEO_API_KEY=key
@@ -61,14 +69,6 @@ GROQ_API_KEY=key
 UNREAL_SPEECH_API_KEY=key // -> Unreal TTS (backup TTS), package can be removed also
 GOOGLE_APPLICATION_CREDENTIALS=key.json-file
 ```
-
-### API's
-
-- [MeteoBlue](https://www.meteoblue.com/de/weather-api/index/overview)
-- [VoiceRSS API (backup TTS)](https://www.voicerss.org/personel/)
-- [Groq](https://console.groq.com/docs/quickstart)
-- [Unreal TTS (backup TTS)](https://unrealspeech.com/onboard)
-- [Google TTS](https://cloud.google.com/text-to-speech?hl=de)
 
 ### **Build the server (with docker):**
 
