@@ -24,9 +24,6 @@ class HitzebedingteTode(MovingCameraScene):
         
         # self.camera.background_color = "#ffffff"
 
-        
-
-
         # Set up axes
         ax = Axes(
             x_range=[1999, 2023, 1],
@@ -70,7 +67,7 @@ class HitzebedingteTode(MovingCameraScene):
         # Legend
         legend = Text("Source: BAFU und BAG", font_size=9, font="Lora").to_corner(DOWN + RIGHT)
 
-        self.add(legend)
+        # self.add(legend)
 
         # Creating the points and graphs for Zurich and Switzerland data
         zurich_points = [ax.c2p(year, cases) for year, cases in zurich_data.items()]
@@ -96,7 +93,7 @@ class HitzebedingteTode(MovingCameraScene):
             target_position = zurich_graph.point_from_proportion(alpha)
             camera_frame.move_to(target_position)
 
-        self.camera.frame.set(width=ax.width + 2, height=ax.height + 2)
+        self.camera.frame.set(width=ax.width *4 + 2, height=ax.height *4 + 2)
         self.wait(1)
         self.camera.frame.save_state()
         self.play(self.camera.frame.animate.move_to(zurich_graph.get_start()).set(width=ax.x_length / 5))

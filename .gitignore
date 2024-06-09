@@ -1,7 +1,5 @@
 server/audio_files/
 .env
-server/go.mod
-server/go.sum
 kub/kub_schematics/kub-backups
 video_animations/__pycache__
 video_animations/media
