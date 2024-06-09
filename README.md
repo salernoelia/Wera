@@ -190,7 +190,7 @@ Responds with OK status 200.
 
 Responds with the sensor dataset of the ZHAW Grid, currently only has access to about 50 sensors and the temperature data only.
 
-## **POST /cityclimategps**
+### **POST /cityclimategps**
 
 Responds with the sensor dataset of the ZHAW Grid, sorted by distance (closest to furthest).
 
