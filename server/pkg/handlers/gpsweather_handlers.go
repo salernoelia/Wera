@@ -31,8 +31,6 @@ func FetchAndSpeakWeatherBasedOnGPS(w http.ResponseWriter, r *http.Request) {
     if meteoErr != nil {
         log.Printf("Error fetching MeteoBlue data: %v\n", meteoErr)
     }
-
-    // Switzerland is typically in CET or CEST, so let's assume CEST for now (+2 UTC)
     location, err := time.LoadLocation("Europe/Zurich")
     if err != nil {
         log.Printf("Error loading location 'Europe/Zurich': %v", err)
